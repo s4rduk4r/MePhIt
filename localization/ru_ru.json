@@ -17,5 +17,7 @@
   "CmdSrvrOrgChannelNameCommands": "команды",
   "CmdSrvrOrgRoleTeacher": "преподаватель",
   "CmdSrvrOrgRoleGroupLeader": "староста",
-  "CmdSrvrOrgRoleStudent": "студент"
+  "CmdSrvrOrgRoleStudent": "студент",
+  "CmdMyTestTestsSearch": ":information_source: Поиск MyTest файлов:",
+  "CmdMyTestTestsNotFound": ":warning: Тесты не обнаружены!"
 }

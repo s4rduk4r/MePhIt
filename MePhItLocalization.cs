@@ -34,7 +34,9 @@ namespace MePhIt
         CmdSrvrOrgChannelNameCommands,
         CmdSrvrOrgRoleTeacher,
         CmdSrvrOrgRoleGroupLeader,
-        CmdSrvrOrgRoleStudent
+        CmdSrvrOrgRoleStudent,
+        CmdMyTestTestsSearch,
+        CmdMyTestTestsNotFound
     }
 
     public class MePhItLocalization
@@ -140,6 +142,12 @@ namespace MePhIt
                                 break;
                             case "CmdSrvrOrgRoleStudent":
                                 localizedMessages[language].Add(MessageID.CmdSrvrOrgRoleStudent, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestTestsSearch":
+                                localizedMessages[language].Add(MessageID.CmdMyTestTestsSearch, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestTestsNotFound":
+                                localizedMessages[language].Add(MessageID.CmdMyTestTestsNotFound, jsonReader.Value as string);
                                 break;
                             default:
                                 break;
