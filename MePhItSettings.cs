@@ -11,18 +11,60 @@ namespace MePhIt
 {
     public class MePhItSettings
     {
+        /// <summary>
+        /// MePhIT global settings
+        /// </summary>
         public static MePhItSettings Settings = new MePhItSettings();
 
+        /// <summary>
+        /// Localization strings
+        /// </summary>
         public MePhItLocalization Localization = MePhItLocalization.Localization;
-        // Default server language
+
+        /// <summary>
+        /// Path to MyTest test files folder
+        /// </summary>
+        public string MyTestFolder { get; private set; }
+
+        /// <summary>
+        /// Default server language
+        /// </summary>
         public LanguageID LanguageDefault { get; set; }
+
+        /// <summary>
+        /// Path to localization files
+        /// </summary>
         public IDictionary<LanguageID, string> LocalizationFilePath { get; private set; } = new Dictionary<LanguageID, string>();
+
+        /// <summary>
+        /// Emojis for MyTest test variants and reactions
+        /// </summary>
         public IList<DiscordEmoji> EmojiNumbers { get; private set; } = null;
+
+        /// <summary>
+        /// Reaction of successful command execution
+        /// </summary>
         public DiscordEmoji EmojiReactSuccess { get; private set; } = null;
+
+        /// <summary>
+        /// Reaction of failed command execution
+        /// </summary>
         public DiscordEmoji EmojiReactFail { get; private set; } = null;
+
+        /// <summary>
+        /// MePhIT's discord client
+        /// </summary>
         public DiscordClient Discord { get; private set; }
+
+        /// <summary>
+        /// Bot token from https://discordapp.com/developers/applications
+        /// </summary>
         private string token = null;
 
+        /// <summary>
+        /// Prepare bot for a start
+        /// </summary>
+        /// <returns>List of command prefix symbols</returns>
         public IList<string> LoadSettings()
         {
             string emojiReactSuccess;
@@ -49,6 +91,10 @@ namespace MePhIt
             return commandPrefixes;
         }
 
+        /// <summary>
+        /// Parse settings.json file
+        /// </summary>
+        /// <returns>Returns tuple with emojis, command prefixes and web proxy strings</returns>
         private 
             (string emojiReactSuccess, string emojiReactFail, IList<string> emojiNumbers, IList<string> commandPrefixes, string webProxyAddress) 
             ReadSettings()
@@ -99,7 +145,7 @@ namespace MePhIt
                                 emojiNumbers.Add(jsonReader.Value as string);
                                 break;
                             case "mytest_folder":
-                                // TODO: MyTest
+                                MyTestFolder = jsonReader.Value as string;
                                 break;
                             case "localization_folder":
                                 langFolder = (jsonReader.Value as string);
@@ -145,6 +191,11 @@ namespace MePhIt
             return (emojiReactSuccess, emojiReactFail, emojiNumbers, commandPrefixes, webProxyAddress);
         }
 
+        /// <summary>
+        /// Gets file paths to the specific localization strings
+        /// </summary>
+        /// <param name="langFolder">Folder where the localizations are located</param>
+        /// <param name="languages">List of languages from the settings file</param>
         private void GetLocalizationFilePaths(string langFolder, IEnumerable<string> languages)
         {
             foreach (var lang in languages)
@@ -163,6 +214,12 @@ namespace MePhIt
             }
         }
 
+        /// <summary>
+        /// Loads emojis for bot reactions and MyTest answer choices
+        /// </summary>
+        /// <param name="emojiReactSuccess">Bot reaction to successful command execution</param>
+        /// <param name="emojiReactFail">Bot reaction to failed command execution</param>
+        /// <param name="emojiNumbers">MyTest answer choice emojis</param>
         private void LoadEmojis(in string emojiReactSuccess, 
                                 in string emojiReactFail, in IList<string> emojiNumbers)
         {
