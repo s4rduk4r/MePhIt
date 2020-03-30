@@ -1,0 +1,22 @@
+{
+  "ClassStarted": "```diff\n+ THE CLASS HAS STARTED\n```\n{0}",
+  "BreakStarted": "```fix\n------- BREAK {0} MINUTES -------\n\n THE CLASS WILL BE CONTINUED AT {1}\n=== DON'T FORGET TO GET AWAY FROM COMPUTER AND GET SOME PHYSICAL ACTIVITY ===```\n{2}",
+  "BreakEnded": "```fix\n------- BREAK IS OVER -------\n=== THE CLASS CONTINUES ===```\n{0}",
+  "ClassEndingNotify": ":information_source: Class will be over in **{0}** min.\n{1}",
+  "ClassEnded": "```fix\nTHE CLASS IS OVER\n```\n{0}",
+  "ListHeader": "```css\n[STUDENT PRESENCE CHECK]\n```",
+  "ListPresent": "{0}\t`PRESENT`\n",
+  "ListAbsent": "{0}\t`ABSENT`\n",
+  "CmdSrvrOrgChannelNameRules": "rules",
+  "CmdSrvrOrgChannelNameInfo": "info",
+  "CmdSrvrOrgCategoryNameClass": "Class",
+  "CmdSrvrOrgChannelNameChat": "chat",
+  "CmdSrvrOrgChannelNameCommon": "Common",
+  "CmdSrvrOrgChannelNameSubmit": "submit-your-work-here",
+  "CmdSrvrOrgCategoryNameControl": "Bot Controls",
+  "CmdSrvrOrgChannelNameCommands": "commands",
+  "CmdSrvrOrgRoleTeacher": "teacher",
+  "CmdSrvrOrgRoleGroupLeader": "group-leader",
+  "CmdSrvrOrgRoleStudent": "student"
+}
+

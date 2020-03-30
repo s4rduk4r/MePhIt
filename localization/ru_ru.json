@@ -1,0 +1,21 @@
+﻿{
+  "ClassStarted": "```diff\n+ ЗАНЯТИЕ НАЧАЛОСЬ\n```\n{0}",
+  "BreakStarted": "```fix\n------- ПЕРЕРЫВ {0} МИНУТ -------\n\n ЗАНЯТИЕ БУДЕТ ПРОДОЛЖЕНО В {1}\n=== НЕ ЗАБУДЬТЕ ВСТАТЬ ИЗ-ЗА КОМПЬЮТЕРА И СДЕЛАТЬ ЗАРЯДКУ ===```\n{2}",
+  "BreakEnded": "```fix\n------- ПЕРЕРЫВ ОКОНЧЕН -------\n=== ЗАНЯТИЕ ПРОДОЛЖАЕТСЯ ===```\n{0}",
+  "ClassEndingNotify": ":information_source: До конца занятия осталось **{0}** мин.\n{1}",
+  "ClassEnded": "```fix\nЗАНЯТИЕ ОКОНЧЕНО\n```\n{0}",
+  "ListHeader": "```css\n[ПЕРЕКЛИЧКА]\n```",
+  "ListPresent": "{0}\t`ПРИСУТСТВУЕТ`\n",
+  "ListAbsent": "{0}\t`ОТСУТСТВУЕТ`\n",
+  "CmdSrvrOrgChannelNameRules": "правила",
+  "CmdSrvrOrgChannelNameInfo": "информация",
+  "CmdSrvrOrgCategoryNameClass": "Занятие",
+  "CmdSrvrOrgChannelNameChat": "чат",
+  "CmdSrvrOrgChannelNameCommon": "Общий",
+  "CmdSrvrOrgChannelNameSubmit": "результаты-работы",
+  "CmdSrvrOrgCategoryNameControl": "Управление ботом",
+  "CmdSrvrOrgChannelNameCommands": "команды",
+  "CmdSrvrOrgRoleTeacher": "преподаватель",
+  "CmdSrvrOrgRoleGroupLeader": "староста",
+  "CmdSrvrOrgRoleStudent": "студент"
+}
