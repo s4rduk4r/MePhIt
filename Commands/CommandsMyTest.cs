@@ -21,6 +21,7 @@ namespace MePhIt.Commands
                 "тест")
     ]
     [Description("Управление поведением MyTest")]
+    [RequirePermissions(Permissions.Administrator)]
     public class CommandsMyTest : BaseCommandModule
     {
         /// <summary>
@@ -44,6 +45,7 @@ namespace MePhIt.Commands
         [Command("list")]
         [Aliases("список")]
         [Description("Показать доступные файлы тестов")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestTests(CommandContext commandContext, DiscordChannel channel = null)
         {
             channel = channel == null ? commandContext.Channel : channel;
@@ -94,6 +96,7 @@ namespace MePhIt.Commands
         [Command("file")]
         [Aliases("файл")]
         [Description("Выбрать файл теста из установленных в системе")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestFile(CommandContext commandContext, params string[] filepath)
         {
             var filePath = "";
@@ -109,13 +112,49 @@ namespace MePhIt.Commands
                 test.LoadTest(filePath);
                 TestStates[commandContext.Guild] = test;
                 var msg = string.Format(Localization.Message(Settings.LanguageDefault, MessageID.CmdMyTestFileLoadSuccess), test.Name);
-                commandContext.Channel.SendMessageAsync(msg);
+                await commandContext.Channel.SendMessageAsync(msg);                
             }
             catch(Exception e)
             {
                 await commandContext.Channel.SendMessageAsync($":bangbang: {e.Message}");
                 commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
             }
+        }
+
+        [Command("start")]
+        [Aliases("старт")]
+        [Description("Начать тестирование")]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task MyTestStart(CommandContext commandContext, DiscordChannel channel)
+        {
+            // 1. Get loaded test
+            TestState test;
+            if(!TestStates.TryGetValue(commandContext.Guild, out test))
+            {
+                await commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+                return;
+            }
+            // 2. Get a list of students online
+
+            // 3. Open DM channel to each student
+
+            // 4. Throw all of the questions at them.
+            // Remember message IDs to read student's answers from them
+
+            // 5. Start test timer
+
+            // 6. Register callback for test end event
+
+            // 7. Register test start to enable the *ready* command from the student
+
+            // 8. At the end of the test collect all the reactions from the students 
+            // and process them as answers
+
+            // 9. Present the question-answer statistics to the students
+
+            // 10. Present the question-answer statistics to the teacher
+
+            // 11. Form the marks earned
         }
 
         /// <summary>
@@ -126,6 +165,7 @@ namespace MePhIt.Commands
         [Command("sync")]
         [Aliases("синх")]
         [Description("Синхронизировать папку с тестами и файлы в папке на Яндекс.Диске")]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestSyncFilesFromYandexDisk(CommandContext commandContext)
         {
             throw new NotImplementedException();
