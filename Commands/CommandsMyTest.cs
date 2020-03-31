@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
@@ -93,23 +94,28 @@ namespace MePhIt.Commands
         [Command("file")]
         [Aliases("файл")]
         [Description("Выбрать файл теста из установленных в системе")]
-        public async Task MyTestFile(CommandContext commandContext, string filepath)
+        public async Task MyTestFile(CommandContext commandContext, params string[] filepath)
         {
+            var filePath = "";
+            foreach (var str in filepath)
+            {
+                filePath += str + (str != filepath[filepath.Length - 1] ? " " : "");
+            }
+
             try
             {
-                filepath = Path.Combine(Settings.MyTestFolder, filepath);
+                filePath = Path.Combine(Settings.MyTestFolder, filePath);
                 var test = new TestState();
-                test.LoadTest(filepath);
+                test.LoadTest(filePath);
                 TestStates[commandContext.Guild] = test;
-                commandContext.Channel.SendMessageAsync($":information_source: {test.Name} has been loaded");
+                var msg = string.Format(Localization.Message(Settings.LanguageDefault, MessageID.CmdMyTestFileLoadSuccess), test.Name);
+                commandContext.Channel.SendMessageAsync(msg);
             }
             catch(Exception e)
             {
                 await commandContext.Channel.SendMessageAsync($":bangbang: {e.Message}");
                 commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
             }
-            // TODO:
-            throw new NotImplementedException();
         }
 
 
