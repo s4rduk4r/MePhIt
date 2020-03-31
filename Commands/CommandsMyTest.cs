@@ -22,7 +22,15 @@ namespace MePhIt.Commands
     [Description("Управление поведением MyTest")]
     public class CommandsMyTest : BaseCommandModule
     {
+        /// <summary>
+        /// Ongoing MyTest tests
+        /// </summary>
         public IDictionary<DiscordGuild, TestState> TestStates = new Dictionary<DiscordGuild, TestState>();
+        /// <summary>
+        /// MyTest filepaths holder
+        /// </summary>
+        public IDictionary<DiscordGuild, IList<string>> TestFiles = new Dictionary<DiscordGuild, IList<string>>();
+
         private MePhItSettings Settings = MePhItBot.Bot.Settings;
         private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
         
@@ -43,16 +51,27 @@ namespace MePhIt.Commands
 
             try
             {
-                var availableTests = Directory.GetFiles(Settings.MyTestFolder, ".mtc");
-                if (availableTests == null || availableTests.Length == 0)
+                // List files in nested directories
+                var availableTests = new List<string>(Directory.GetFiles(Settings.MyTestFolder, "*.mtc", SearchOption.AllDirectories));
+
+                // Show found test files
+                if (availableTests.Count == 0)
                 {
                     msg = $"{msg} {Localization.Message(Settings.LanguageDefault, MessageID.CmdMyTestTestsNotFound)}";
                 }
                 else
                 {
+                    // Convert filepaths to Unix
                     foreach (var test in availableTests)
                     {
-                        msg = $"{msg}{Path.GetFileName(test)}\n";
+                        var relPath = Path.GetRelativePath(Settings.MyTestFolder, test).Split(Path.DirectorySeparatorChar);
+                        string relPathFixed = "";
+                        foreach(var rPath in relPath)
+                        {
+                            var sep = rPath != relPath[relPath.Length - 1] ? Path.AltDirectorySeparatorChar.ToString() : "";
+                            relPathFixed += $"{rPath}{sep}";
+                        }
+                        msg = $"{msg}{relPathFixed}\n";
                     }
                 }
 
@@ -74,8 +93,21 @@ namespace MePhIt.Commands
         [Command("file")]
         [Aliases("файл")]
         [Description("Выбрать файл теста из установленных в системе")]
-        public async Task MyTestFile(CommandContext commandContext)
+        public async Task MyTestFile(CommandContext commandContext, string filepath)
         {
+            try
+            {
+                filepath = Path.Combine(Settings.MyTestFolder, filepath);
+                var test = new TestState();
+                test.LoadTest(filepath);
+                TestStates[commandContext.Guild] = test;
+                commandContext.Channel.SendMessageAsync($":information_source: {test.Name} has been loaded");
+            }
+            catch(Exception e)
+            {
+                await commandContext.Channel.SendMessageAsync($":bangbang: {e.Message}");
+                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+            }
             // TODO:
             throw new NotImplementedException();
         }
