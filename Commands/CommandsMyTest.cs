@@ -41,8 +41,8 @@ namespace MePhIt.Commands
         /// <param name="commandContext"></param>
         /// <param name="channel">Channel where to show findings</param>
         /// <returns></returns>
-        [Command("tests")]
-        [Aliases("тесты")]
+        [Command("list")]
+        [Aliases("список")]
         [Description("Показать доступные файлы тестов")]
         public async Task MyTestTests(CommandContext commandContext, DiscordChannel channel = null)
         {
@@ -118,7 +118,11 @@ namespace MePhIt.Commands
             }
         }
 
-
+        /// <summary>
+        /// Sync MyTest directory with remote cloud
+        /// </summary>
+        /// <param name="commandContext"></param>
+        /// <returns></returns>
         [Command("sync")]
         [Aliases("синх")]
         [Description("Синхронизировать папку с тестами и файлы в папке на Яндекс.Диске")]
