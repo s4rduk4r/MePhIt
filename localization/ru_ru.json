@@ -19,5 +19,6 @@
   "CmdSrvrOrgRoleGroupLeader": "староста",
   "CmdSrvrOrgRoleStudent": "студент",
   "CmdMyTestTestsSearch": ":information_source: Поиск MyTest файлов:",
-  "CmdMyTestTestsNotFound": ":warning: Тесты не обнаружены!"
+  "CmdMyTestTestsNotFound": ":warning: Тесты не обнаружены!",
+  "CmdMyTestFileLoadSuccess": ":information_source: Загружен тест: **{0}**"
 }

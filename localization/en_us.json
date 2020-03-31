@@ -19,6 +19,7 @@
   "CmdSrvrOrgRoleGroupLeader": "group-leader",
   "CmdSrvrOrgRoleStudent": "student",
   "CmdMyTestTestsSearch": ":information_source: Searching for MyTest files:",
-  "CmdMyTestTestsNotFound": ":warning: Tests not found!"
+  "CmdMyTestTestsNotFound": ":warning: Tests not found!",
+  "CmdMyTestFileLoadSuccess": ":information_source: Test loaded **{0}**"
 }
 
