@@ -89,18 +89,20 @@ namespace MePhIt.Commands
             "lang:  ru - создать каналы и категории для русскоязычного сервера\n" +
             "       en - создать каналы и категории для англоязычного сервера")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task Setup(CommandContext commandContext, string lang = "ru")
+        public async Task Setup(CommandContext commandContext)
         {
-            LanguageID language = MePhItSettings.Settings.LanguageDefault;
-            switch(lang)
+            LanguageID language = MePhItBot.Bot.Settings.LanguageDefault;
+            try
             {
-                case "ru":
-                    language = LanguageID.ru_RU;
-                    break;
-                case "en":
-                    language = LanguageID.en_US;
-                    break;
+                language = MePhItBot.Bot.Settings.Localization.Language[commandContext.Guild];
             }
+            catch(Exception e)
+            {
+                await commandContext.Message.RespondAsync($":bangbang: {e.Message}");
+                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+                return;
+            }
+            
             var channelNameRules = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgChannelNameRules);
             var channelNameInfo = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgChannelNameInfo);
             var categoryNameClass = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgCategoryNameClass);
