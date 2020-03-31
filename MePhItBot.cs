@@ -57,6 +57,7 @@ namespace MePhIt
             commands.RegisterCommands<CommandsModeration>();
             commands.RegisterCommands<CommandsMyTest>();
             commands.RegisterCommands<CommandsClassTime>();
+            commands.RegisterCommands<CommandsSetup>();
         }
 
         static async Task Main(string[] args)
