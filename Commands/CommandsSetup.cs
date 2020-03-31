@@ -10,7 +10,7 @@ using DSharpPlus.CommandsNext.Attributes;
 namespace MePhIt.Commands
 {
     [Group("set")]
-    [Aliases("настройка", "настр")]
+    [Aliases("настрой", "настр")]
     [Description("Настройка параметров бота")]
     [RequirePermissions(Permissions.Administrator)]
     class CommandsSetup : BaseCommandModule
