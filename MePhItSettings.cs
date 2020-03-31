@@ -88,6 +88,8 @@ namespace MePhIt
             );
             LoadEmojis(emojiReactSuccess, emojiReactFail, emojiNumbers);
 
+            SetServerLocalizations();
+
             return commandPrefixes;
         }
 
@@ -172,10 +174,10 @@ namespace MePhIt
                                 switch(jsonReader.Value as string)
                                 {
                                     case "ru_RU":
-                                        Localization.LanguageFallback = LanguageID.ru_RU;
+                                        LanguageDefault = LanguageID.ru_RU;
                                         break;
                                     case "en_US":
-                                        Localization.LanguageFallback = LanguageID.en_US;
+                                        LanguageDefault = LanguageID.en_US;
                                         break;
                                     default:
                                         break;
@@ -213,6 +215,17 @@ namespace MePhIt
                     default:
                         break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Set server-specific localization settings
+        /// </summary>
+        private void SetServerLocalizations()
+        {
+            foreach (var guild in Discord.Guilds.Values)
+            {
+                Localization.Language[guild] = Settings.LanguageDefault;
             }
         }
 
