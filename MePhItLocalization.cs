@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using DSharpPlus.Entities;
 
 namespace MePhIt
 {
@@ -44,16 +45,103 @@ namespace MePhIt
     {
         public static MePhItLocalization Localization = new MePhItLocalization();
 
+        /// <summary>
+        /// Localization strings holder
+        /// </summary>
         private IDictionary<LanguageID, IDictionary<MessageID, string>> localizedMessages = new Dictionary<LanguageID, IDictionary<MessageID, string>>();
+        
+        /// <summary>
+        /// Default language settings
+        /// </summary>
+        public LanguageID LanguageFallback { get; private set; } = LanguageID.en_US;
+        
+        /// <summary>
+        /// Server specific language settings
+        /// </summary>
+        public IDictionary<DiscordGuild, LanguageID> Language { get; set; } = new Dictionary<DiscordGuild, LanguageID>();
+        
+        /// <summary>
+        /// Supported languages IDs
+        /// </summary>
+        public IList<LanguageID> LanguageIDs { get; private set; } = null;
 
-        public LanguageID LanguageFallback = LanguageID.en_US;
+        /// <summary>
+        /// Get supported language strings in xx_YY format. ru_RU, en_US, en_UK, etc.
+        /// </summary>
+        /// <returns></returns>
+        public IList<string> GetLanguages()
+        {
+            var languages = new List<string>();
+            foreach(var langId in LanguageIDs)
+            {
+                switch(langId)
+                {
+                    case LanguageID.ru_RU:
+                        languages.Add("ru_RU");
+                        break;
+                    case LanguageID.en_US:
+                        languages.Add("en_US");
+                        break;
+                }
+            }
+            return languages.Count != 0 ? languages : null ;
+        }
+
+        /// <summary>
+        /// Converts language represenation string into language id
+        /// </summary>
+        /// <param name="language">Language string in xx_YY format. E.g. ru_RU, en_US, en_UK, etc.</param>
+        /// <returns></returns>
+        public LanguageID GetLanguageId(in string language)
+        {
+            LanguageID value = LanguageFallback;
+            switch(language)
+            {
+                case "ru_RU":
+                    value = LanguageID.ru_RU;
+                    break;
+                case "en_US":
+                    value = LanguageID.en_US;
+                    break;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Get localization string
+        /// </summary>
+        /// <param name="language">Localization language</param>
+        /// <param name="messageID">Message ID</param>
+        /// <returns></returns>
         public string Message(in LanguageID language, in MessageID messageID)
         {
             return localizedMessages[language][messageID];
         }
 
+        /// <summary>
+        /// Get localization string
+        /// </summary>
+        /// <param name="server">Server where bot is present</param>
+        /// <param name="messageID">Message ID</param>
+        /// <returns></returns>
+        public string Message(in DiscordGuild server, in MessageID messageID)
+        {
+            LanguageID language;
+            if(Language.TryGetValue(server, out language))
+            {
+                return localizedMessages[language][messageID];
+            }
+            throw new InvalidOperationException("Unknown server");
+        }
+
+        /// <summary>
+        /// Load localization strings for multiple languages
+        /// </summary>
+        /// <param name="localizations">List of localizations to load</param>
         public void LoadLocalizations(IEnumerable<LanguageID> localizations)
         {
+            LanguageIDs = new List<LanguageID>(localizations);
+
             foreach(var loc in localizations)
             {
                 LoadLocalization(loc);
@@ -66,6 +154,10 @@ namespace MePhIt
             }
         }
 
+        /// <summary>
+        /// Load localization strings for one language
+        /// </summary>
+        /// <param name="language">Localization to load</param>
         private void LoadLocalization(LanguageID language)
         {
             var file = new FileStream(MePhItBot.Bot.Settings.LocalizationFilePath[language], FileMode.Open, FileAccess.Read);
