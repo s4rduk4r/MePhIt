@@ -147,7 +147,7 @@ namespace MePhIt
                             case "mytest_folder":
                                 MyTestFolder = jsonReader.Value as string;
                                 // Convert into OS-valid filepath
-                                MyTestFolder = Path.Combine(MyTestFolder.Split("/"));
+                                MyTestFolder = Path.Combine(MyTestFolder.Split(Path.AltDirectorySeparatorChar));
                                 break;
                             case "localization_folder":
                                 langFolder = (jsonReader.Value as string);
