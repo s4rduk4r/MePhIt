@@ -36,11 +36,19 @@ namespace MePhIt.Commands
         public IDictionary<DiscordGuild, TestResults> TestResults = new ConcurrentDictionary<DiscordGuild, TestResults>();
 
         // Shortcuts
+        private MePhItBot Bot = MePhItBot.Bot;
         private MePhItSettings Settings = MePhItBot.Bot.Settings;
         private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
 
         // Local Settings
+        /// <summary>
+        /// Test channel group
+        /// </summary>
         private IDictionary<DiscordGuild, IDictionary<DiscordMember, DiscordChannel>> tempTestChannelGrp = new ConcurrentDictionary<DiscordGuild, IDictionary<DiscordMember, DiscordChannel>>();
+        /// <summary>
+        /// Test question messages
+        /// </summary>
+        private IDictionary<DiscordGuild, IDictionary<DiscordMember, IList<DiscordMessage>>> tempTestChannelQuestions = new ConcurrentDictionary<DiscordGuild, IDictionary<DiscordMember, IList<DiscordMessage>>>();
 
         // Timeout before the test starts
         private int timeoutBeforeTestMinutes = 2;
@@ -93,12 +101,12 @@ namespace MePhIt.Commands
                 }
 
                 await channel.SendMessageAsync(msg);
-                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
+                commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
             }
             catch(Exception e)
             {
                 await channel.SendMessageAsync($":bangbang: {e.Message}");
-                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+                commandContext.Message.CreateReactionAsync(Bot.ReactFail);
             }
         }
 
@@ -126,12 +134,13 @@ namespace MePhIt.Commands
                 test.LoadTest(filePath);
                 TestStates[commandContext.Guild] = test;
                 var msg = string.Format(Localization.Message(commandContext.Guild, MessageID.CmdMyTestFileLoadSuccess), test.Name);
-                await commandContext.Channel.SendMessageAsync(msg);                
+                await commandContext.Channel.SendMessageAsync(msg);
+                commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
             }
             catch(Exception e)
             {
                 await commandContext.Channel.SendMessageAsync($":bangbang: {e.Message}");
-                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+                commandContext.Message.CreateReactionAsync(Bot.ReactFail);
             }
         }
 
