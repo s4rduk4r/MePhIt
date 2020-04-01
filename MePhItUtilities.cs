@@ -13,6 +13,76 @@ namespace MePhIt
     /// </summary>
     internal static class MePhItUtilities
     {
+        // ------------ CHANNEL MANAGEMENT ------------
+        /// <summary>
+        /// Create temporary channels for specific server members
+        /// </summary>
+        /// <param name="server">Server where to create new channels</param>
+        /// <param name="categoryName">Category channel into which new channels should be put</param>
+        /// <param name="channelNames">Tuple with desired channel names, their types and who this channel is created for</param>
+        /// <returns></returns>
+        public static async Task<(DiscordChannel CategoryChannel, IEnumerable<(DiscordMember Member, DiscordChannel Channel)> NestedChannels)>
+            CreateTemproraryChannelsAsync(DiscordGuild server, string categoryName, IEnumerable<(DiscordMember Member, bool IsAudio)> channelNames)
+        {
+            var tempChannels = new BlockingCollection<(DiscordMember Member, DiscordChannel Channel)>();
+            DiscordChannel category = null;
+            try
+            {
+                category = await server.CreateChannelCategoryAsync(categoryName);
+            }
+            catch (Exception e)
+            {
+            }
+            finally
+            {
+                DiscordChannel channel = null;
+                foreach (var ch in channelNames)
+                {
+                    if (ch.IsAudio)
+                    {
+                        channel = await server.CreateVoiceChannelAsync(ch.Member.DisplayName, category);
+                    }
+                    else
+                    {
+                        channel = await server.CreateTextChannelAsync(ch.Member.DisplayName, category);
+                    }
+                    if (channel != null)
+                    {
+                        tempChannels.Add((ch.Member, channel));
+                    }
+                }
+            }
+
+            return (category, tempChannels);
+        }
+
+        /// <summary>
+        /// Delete temporary channels
+        /// </summary>
+        /// <param name="channels">Channels to delete</param>
+        public static void CreateTemproraryChannelsAsync(IEnumerable<DiscordChannel> channels)
+        {
+            foreach (var ch in channels)
+            {
+                ch.DeleteAsync();
+            }
+        }
+
+        /// <summary>
+        /// Get channel mentions
+        /// </summary>
+        /// <param name="channels"></param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetChannelMentions(IEnumerable<DiscordChannel> channels)
+        {
+            var channelNames = new List<string>();
+            foreach(var ch in channels)
+            {
+                channelNames.Add(ch.Mention);
+            }
+            return channelNames;
+        }
+
         // ------------ ROLE MANAGEMENT ------------
         /// <summary>
         /// Create temporary role on the server for a specific user
@@ -47,46 +117,17 @@ namespace MePhIt
             return tempRoles;
         }
 
+        /// <summary>
+        /// Delete temporary roles
+        /// </summary>
+        /// <param name="roles"></param>
+        /// <returns></returns>
         public static async Task DeleteTemporaryRolesAsync(IEnumerable<DiscordRole> roles)
         {
             foreach(var role in roles)
             {
                 role.DeleteAsync();
             }
-        }
-
-        public static async Task<(DiscordChannel CategoryChannel, IEnumerable<DiscordChannel> NestedChannels)> 
-            CreateTemproraryChannelsAsync(DiscordGuild server, string categoryName, IEnumerable<(string Name, bool IsAudio)> channels)
-        {
-            var tempChannels = new BlockingCollection<DiscordChannel>();
-            DiscordChannel category = null;
-            try
-            {
-                category = await server.CreateChannelCategoryAsync(categoryName);
-            }
-            catch(Exception e)
-            {   
-            }
-            finally
-            {
-                DiscordChannel channel = null;
-                foreach(var ch in channels)
-                {
-                    if(ch.IsAudio)
-                    {
-                        channel = await server.CreateVoiceChannelAsync(ch.Name, category);
-                    }
-                    else
-                    {
-                        channel = await server.CreateTextChannelAsync(ch.Name, category);
-                    }
-                }
-                if(channel != null)
-                {
-                    tempChannels.Add(channel);
-                }
-            }
-            return (category, tempChannels);
         }
 
         /// <summary>
@@ -203,7 +244,7 @@ namespace MePhIt
             switch(number)
             {
                 case 0:
-                    emoji = ":one:";
+                    emoji = ":zero:";
                     break;
                 case 1:
                     emoji = ":one:";
