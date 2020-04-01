@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Timers;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System.IO;
 using static MePhIt.MePhItUtilities;
+using MePhIt.Commands.MyTest;
 
 using MyTestLib;
 
@@ -37,22 +39,17 @@ namespace MePhIt.Commands
 
         // Shortcuts
         private MePhItBot Bot = MePhItBot.Bot;
-        private MePhItSettings Settings = MePhItBot.Bot.Settings;
+        private MePhItSettings BotSettings = MePhItBot.Bot.Settings;
         private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
 
         // Local Settings
-        /// <summary>
-        /// Test channel group
-        /// </summary>
-        private IDictionary<DiscordGuild, IDictionary<DiscordMember, DiscordChannel>> tempTestChannelGrp = new ConcurrentDictionary<DiscordGuild, IDictionary<DiscordMember, DiscordChannel>>();
-        /// <summary>
-        /// Test question messages
-        /// </summary>
-        private IDictionary<DiscordGuild, IDictionary<DiscordMember, IList<DiscordMessage>>> tempTestChannelQuestions = new ConcurrentDictionary<DiscordGuild, IDictionary<DiscordMember, IList<DiscordMessage>>>();
+        public IDictionary<DiscordGuild, CmdMyTestSettings> Settings = new ConcurrentDictionary<DiscordGuild, CmdMyTestSettings>();
 
+        // ------- Time settings -------
         // Timeout before the test starts
         private int timeoutBeforeTestMinutes = 2;
         private string commandTestFinish = "finish";
+
         // Question text format
         private string questionTextFormat = ":question: **{0}**. *{1}?*";
         // Answer text format
@@ -77,7 +74,7 @@ namespace MePhIt.Commands
                 var msg = Localization.Message(commandContext.Guild, MessageID.CmdMyTestTestsSearch) + "\n";
 
                 // List files in nested directories
-                var availableTests = new List<string>(Directory.GetFiles(Settings.MyTestFolder, "*.mtc", SearchOption.AllDirectories));
+                var availableTests = new List<string>(Directory.GetFiles(BotSettings.MyTestFolder, "*.mtc", SearchOption.AllDirectories));
 
                 // Show found test files
                 if (availableTests.Count == 0)
@@ -89,7 +86,7 @@ namespace MePhIt.Commands
                     // Convert filepaths to Unix
                     foreach (var test in availableTests)
                     {
-                        var relPath = Path.GetRelativePath(Settings.MyTestFolder, test).Split(Path.DirectorySeparatorChar);
+                        var relPath = Path.GetRelativePath(BotSettings.MyTestFolder, test).Split(Path.DirectorySeparatorChar);
                         string relPathFixed = "";
                         foreach(var rPath in relPath)
                         {
@@ -129,7 +126,7 @@ namespace MePhIt.Commands
 
             try
             {
-                filePath = Path.Combine(Settings.MyTestFolder, filePath);
+                filePath = Path.Combine(BotSettings.MyTestFolder, filePath);
                 var test = new TestState();
                 test.LoadTest(filePath);
                 TestStates[commandContext.Guild] = test;
@@ -167,12 +164,14 @@ namespace MePhIt.Commands
             // 3.1. Create MyTest channel category
             // 3.2. Create text channels with names corresponding to student's displayed name
             // 3.3 Store created temporary channels
-            tempTestChannelGrp[commandContext.Guild] = await CreateTemporaryTestChannelGroup(commandContext, students);
-            var tempChannels = tempTestChannelGrp[commandContext.Guild];
+            Settings[commandContext.Guild] = new CmdMyTestSettings();
+            var tempTestChannelGrp = await CreateTemporaryTestChannelGroup(commandContext, students);
+            Settings[commandContext.Guild].TempTestChannelGrp = tempTestChannelGrp;
+            var tempChannels = tempTestChannelGrp;
 
             // 3.4. Inform students to join their corresponding channels
             var channelMentions = "";
-            foreach (var mention in GetChannelMentions(tempTestChannelGrp[commandContext.Guild].Values))
+            foreach (var mention in GetChannelMentions(tempTestChannelGrp.Values))
             {
                 channelMentions += mention;
             }
@@ -180,7 +179,7 @@ namespace MePhIt.Commands
             var msg = string.Format(
                                     Localization.Message(commandContext.Guild, MessageID.CmdMyTestStartHelp),
                                     channelMentions,
-                                    Settings.Discord.CurrentUser.Mention,
+                                    BotSettings.Discord.CurrentUser.Mention,
                                     commandTestFinish,
                                     timeoutBeforeTestMinutes
                                     ) + "\n";
@@ -197,7 +196,9 @@ namespace MePhIt.Commands
             {
                 tempChannel.Value.SendMessageAsync($"{tempChannel.Key.Mention}\n{msg}");
             }
-            
+
+            var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
+
             // Send Questions to the test channels
             var questions = test.Questions;
             foreach (var question in questions)
@@ -214,25 +215,86 @@ namespace MePhIt.Commands
                     var message = await tempChannel.Value.SendMessageAsync(msg);
                     for (int i = 1; i <= question.Answers.Count; i++)
                     {
-                        await message.CreateReactionAsync(DiscordEmoji.FromName(Settings.Discord, NumberToEmoji(i)));
+                        await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
+                    }
+                    
+                    // Store messages for each student
+                    var student = tempChannel.Key;
+                    try
+                    {
+                        testMessages[student].Add(message);
+                    }
+                    catch(Exception e)
+                    {
+                        testMessages[student] = new List<DiscordMessage>();
+                        testMessages[student].Add(message);
                     }
                 }
             }
 
-            // 5. Start test timer
+            Settings[commandContext.Guild].TempTestChannelQuestions = testMessages;
 
-            // 6. Register callback for test end event
+            // 5. Register callback for test start/stop event
+            try
+            {
+                var mtTimer = new MyTestTimer(this, new TimeSpan(0, timeoutBeforeTestMinutes, 0).TotalMilliseconds);
+                Settings[commandContext.Guild].Timer = mtTimer;
+                mtTimer.Elapsed += Timer_Elapsed;
+                mtTimer.Start();
+            }
+            catch(Exception e)
+            {
+                channelInfoMessages.SendMessageAsync($"{EmojiError} {e.Message}");
+                return;
+            }
 
-            // 7. Register test start to enable the *ready* command from the student
+            // 6. Register test start to enable the *ready* command from the student
+            commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
+        }
 
-            // 8. At the end of the test collect all the reactions from the students 
-            // and process them as answers
+        /// <summary>
+        /// Retrieve server of the timer
+        /// </summary>
+        /// <param name="timer">Timer</param>
+        /// <returns></returns>
+        internal DiscordGuild GetServer(MyTestTimer timer)
+        {
+            foreach(var srvr in Settings)
+            {
+                if(srvr.Value.Timer == timer)
+                {
+                    return srvr.Key;
+                }
+            }
+            return null;
+        }
 
-            // 9. Present the question-answer statistics to the students
+        /// <summary>
+        /// Test timer event handler
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            var timer = sender as MyTestTimer;
+            if(!timer.TestStarted)
+            {
+                timer.StartTest();
+                return;
+            }
+            else
+            {
+                // 8. At the end of the test collect all the reactions from the students 
+                // and process them as answers
 
-            // 10. Present the question-answer statistics to the teacher
+                // 9. Present the question-answer statistics to the students
 
-            // 11. Form the marks earned
+                // 10. Present the question-answer statistics to the teacher
+
+                // 11. Form the marks earned
+
+            }
+
             throw new NotImplementedException();
         }
 
@@ -265,8 +327,6 @@ namespace MePhIt.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestStop(CommandContext commandContext)
         {
-            // 1. Stop test timer
-            // 2. Delete all bot messages from all opened DM channels
             throw new NotImplementedException();
         }
 
@@ -275,20 +335,6 @@ namespace MePhIt.Commands
         [Description("Показать результаты тестирования")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestResults(CommandContext commandContext, bool brief = false)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Sync MyTest directory with remote cloud
-        /// </summary>
-        /// <param name="commandContext"></param>
-        /// <returns></returns>
-        [Command("sync")]
-        [Aliases("синх")]
-        [Description("Синхронизировать папку с тестами и файлы в папке на Яндекс.Диске")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task MyTestSyncFilesFromYandexDisk(CommandContext commandContext)
         {
             throw new NotImplementedException();
         }

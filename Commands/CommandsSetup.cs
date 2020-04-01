@@ -34,5 +34,19 @@ namespace MePhIt.Commands
             commandContext.Message.CreateReactionAsync(Bot.ReactFail);
         }
 
+        /// <summary>
+        /// Enable Sync MyTest directory with remote cloud
+        /// </summary>
+        /// <param name="commandContext"></param>
+        /// <param name="state">on - enable sync; off - disable sync</param>
+        /// <returns></returns>
+        [Command("sync")]
+        [Aliases("синх")]
+        [Description("Синхронизировать папку с тестами и файлы в папке на Яндекс.Диске")]
+        [RequirePermissions(Permissions.Administrator)]
+        public async Task MyTestSyncFilesFromYandexDisk(CommandContext commandContext, string state)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
