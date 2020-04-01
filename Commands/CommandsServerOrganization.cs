@@ -96,13 +96,13 @@ namespace MePhIt.Commands
             {
                 language = MePhItBot.Bot.Settings.Localization.Language[commandContext.Guild];
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await commandContext.Message.RespondAsync($":bangbang: {e.Message}");
                 commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
                 return;
             }
-            
+
             var channelNameRules = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgChannelNameRules);
             var channelNameInfo = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgChannelNameInfo);
             var categoryNameClass = MePhItLocalization.Localization.Message(language, MessageID.CmdSrvrOrgCategoryNameClass);
@@ -124,14 +124,7 @@ namespace MePhIt.Commands
             var channelRules = await server.CreateTextChannelAsync(channelNameRules, null);
             var channelInfo = await server.CreateTextChannelAsync(channelNameInfo, null);
             var allow = Permissions.AccessChannels | Permissions.ReadMessageHistory | Permissions.AddReactions;
-            var deny = Permissions.Administrator | Permissions.AttachFiles
-                | Permissions.BanMembers | Permissions.ChangeNickname | Permissions.CreateInstantInvite | Permissions.DeafenMembers
-                | Permissions.EmbedLinks | Permissions.KickMembers | Permissions.ManageChannels | Permissions.ManageEmojis
-                | Permissions.ManageGuild | Permissions.ManageMessages | Permissions.ManageNicknames | Permissions.ManageRoles
-                | Permissions.ManageWebhooks | Permissions.MentionEveryone | Permissions.MoveMembers | Permissions.MuteMembers
-                | Permissions.PrioritySpeaker | Permissions.SendMessages | Permissions.SendTtsMessages
-                | Permissions.Speak | Permissions.UseExternalEmojis | Permissions.UseVoice | Permissions.UseVoiceDetection
-                | Permissions.ViewAuditLog;
+            var deny = Permissions.All;
             channelRules.AddOverwriteAsync(everyone, allow, deny);
             channelInfo.AddOverwriteAsync(everyone, allow, deny);
 
@@ -140,52 +133,43 @@ namespace MePhIt.Commands
             // #submit-your-work-here
             // #Common
             var categoryClass = await server.CreateChannelCategoryAsync(categoryNameClass);
-            
-            allow = Permissions.AccessChannels | Permissions.SendMessages | Permissions.EmbedLinks
+
+            allow = Permissions.AccessChannels | Permissions.SendMessages | Permissions.EmbedLinks | Permissions.CreateInstantInvite
                 | Permissions.AttachFiles | Permissions.ReadMessageHistory | Permissions.MentionEveryone
-                | Permissions.AddReactions | Permissions.UseVoice | Permissions.Speak | Permissions.UseVoiceDetection;
-            deny = Permissions.CreateInstantInvite | Permissions.ManageChannels | Permissions.ManageRoles
-                | Permissions.ManageWebhooks | Permissions.SendTtsMessages | Permissions.ManageMessages
-                | Permissions.UseExternalEmojis | Permissions.MuteMembers | Permissions.DeafenMembers
-                | Permissions.MoveMembers | Permissions.PrioritySpeaker | Permissions.Stream;
+                | Permissions.AddReactions | Permissions.UseVoice | Permissions.Speak;
+            deny = Permissions.All;
             await categoryClass.AddOverwriteAsync(everyone, allow, deny);
-            
+
             server.CreateTextChannelAsync(channelNameChat, categoryClass);
             server.CreateVoiceChannelAsync(channelNameCommon, categoryClass);
             var channelSubmit = await server.CreateChannelAsync(channelNameSubmit, ChannelType.Text, categoryClass);
-            allow = Permissions.CreateInstantInvite | Permissions.AccessChannels | Permissions.SendMessages
+            allow = Permissions.AccessChannels | Permissions.SendMessages
                 | Permissions.EmbedLinks | Permissions.AttachFiles | Permissions.AddReactions;
-            deny = Permissions.ManageChannels | Permissions.ManageRoles | Permissions.ManageWebhooks
-                | Permissions.SendTtsMessages | Permissions.ManageMessages | Permissions.ReadMessageHistory
-                | Permissions.MentionEveryone | Permissions.UseExternalEmojis;
+            deny = Permissions.All;
             channelSubmit.AddOverwriteAsync(everyone, allow, deny);
 
             // ---- Bot Controls channels ----
             var categoryControl = await server.CreateChannelCategoryAsync(categoryNameControl);
 
             allow = Permissions.None;
-            deny = Permissions.AccessChannels | Permissions.AddReactions | Permissions.Administrator | Permissions.AttachFiles
-                | Permissions.BanMembers | Permissions.ChangeNickname | Permissions.CreateInstantInvite | Permissions.DeafenMembers
-                | Permissions.EmbedLinks | Permissions.KickMembers | Permissions.ManageChannels | Permissions.ManageEmojis
-                | Permissions.ManageGuild | Permissions.ManageMessages | Permissions.ManageNicknames | Permissions.ManageRoles
-                | Permissions.ManageWebhooks | Permissions.MentionEveryone | Permissions.MoveMembers | Permissions.MuteMembers
-                | Permissions.PrioritySpeaker | Permissions.ReadMessageHistory | Permissions.SendMessages | Permissions.SendTtsMessages
-                | Permissions.Speak | Permissions.UseExternalEmojis | Permissions.UseVoice | Permissions.UseVoiceDetection
-                | Permissions.ViewAuditLog;
+            deny = Permissions.All;
             await categoryControl.AddOverwriteAsync(everyone, allow, deny);
-            
+
             await server.CreateTextChannelAsync(channelNameCommands, categoryControl);
 
             // Make roles
-            var studentPermissions = Permissions.CreateInstantInvite | Permissions.AccessChannels | 
+            var studentPermissions = Permissions.CreateInstantInvite | Permissions.AccessChannels |
                 Permissions.SendMessages | Permissions.EmbedLinks | Permissions.AttachFiles | Permissions.AddReactions
-                | Permissions.UseVoice | Permissions.Speak | Permissions.UseVoiceDetection;
+                | Permissions.UseVoice | Permissions.Speak;
             var studentRoleColor = DiscordColor.LightGray;
             var groupLeaderRoleColor = new DiscordColor(0xF1C40F);
             var teacherRoleColor = new DiscordColor(0x2ECC71);
             server.CreateRoleAsync(serverRoleNameTeacher, everyone.Permissions, teacherRoleColor, true, true);
             server.CreateRoleAsync(serverRoleNameGroupLeader, studentPermissions, groupLeaderRoleColor, false, true); ;
             server.CreateRoleAsync(serverRoleNameStudent, studentPermissions, studentRoleColor, true, true);
+
+            // Set @everyone permissions
+            commandContext.Guild.EveryoneRole.ModifyAsync(null, Permissions.MentionEveryone, null, null, true, null);
 
             await commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
         }
