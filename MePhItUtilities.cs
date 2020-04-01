@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Text;
 using DSharpPlus;
@@ -54,31 +55,38 @@ namespace MePhIt
             }
         }
 
-        public static async Task CreateTemproraryChannelsAsync(DiscordGuild server, string categoryName, IEnumerable<(string Name, bool IsAudio)> channels)
+        public static async Task<(DiscordChannel CategoryChannel, IEnumerable<DiscordChannel> NestedChannels)> 
+            CreateTemproraryChannelsAsync(DiscordGuild server, string categoryName, IEnumerable<(string Name, bool IsAudio)> channels)
         {
+            var tempChannels = new BlockingCollection<DiscordChannel>();
             DiscordChannel category = null;
             try
             {
                 category = await server.CreateChannelCategoryAsync(categoryName);
             }
             catch(Exception e)
-            {
-
+            {   
             }
             finally
             {
-                foreach(var channel in channels)
+                DiscordChannel channel = null;
+                foreach(var ch in channels)
                 {
-                    if(channel.IsAudio)
+                    if(ch.IsAudio)
                     {
-                        server.CreateVoiceChannelAsync(channel.Name, category);
+                        channel = await server.CreateVoiceChannelAsync(ch.Name, category);
                     }
                     else
                     {
-                        server.CreateTextChannelAsync(channel.Name, category);
+                        channel = await server.CreateTextChannelAsync(ch.Name, category);
                     }
                 }
+                if(channel != null)
+                {
+                    tempChannels.Add(channel);
+                }
             }
+            return (category, tempChannels);
         }
 
         /// <summary>
