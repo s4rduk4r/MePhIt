@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -14,7 +15,7 @@ namespace MePhIt.Commands
     [Aliases("занятие")]
     public class CommandsClassTime : BaseCommandModule
     {
-        public IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new Dictionary<DiscordGuild, ClassTimeSettings>();
+        public IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new ConcurrentDictionary<DiscordGuild, ClassTimeSettings>();
 
         [Command("ru")]
         [Aliases("ru_RU", "russian", "ру", "русский")]
