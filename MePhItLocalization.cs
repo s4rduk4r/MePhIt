@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using System.IO;
 using System.Threading;
@@ -50,7 +51,7 @@ namespace MePhIt
         /// <summary>
         /// Localization strings holder
         /// </summary>
-        private IDictionary<LanguageID, IDictionary<MessageID, string>> localizedMessages = new Dictionary<LanguageID, IDictionary<MessageID, string>>();
+        private IDictionary<LanguageID, IDictionary<MessageID, string>> localizedMessages = new ConcurrentDictionary<LanguageID, IDictionary<MessageID, string>>();
         
         /// <summary>
         /// Default language settings
@@ -60,7 +61,7 @@ namespace MePhIt
         /// <summary>
         /// Server specific language settings
         /// </summary>
-        public IDictionary<DiscordGuild, LanguageID> Language { get; set; } = new Dictionary<DiscordGuild, LanguageID>();
+        public IDictionary<DiscordGuild, LanguageID> Language { get; set; } = new ConcurrentDictionary<DiscordGuild, LanguageID>();
         
         /// <summary>
         /// Supported languages IDs
@@ -170,7 +171,7 @@ namespace MePhIt
 
             var jsonReader = new JsonTextReader(new StringReader(jsonText));
             string jsonProperty = string.Empty;
-            localizedMessages[language] = new Dictionary<MessageID, string>();
+            localizedMessages[language] = new ConcurrentDictionary<MessageID, string>();
             while(jsonReader.Read())
             {
                 switch (jsonReader.TokenType)
