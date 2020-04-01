@@ -38,7 +38,9 @@ namespace MePhIt
         CmdSrvrOrgRoleStudent,
         CmdMyTestTestsSearch,
         CmdMyTestTestsNotFound,
-        CmdMyTestFileLoadSuccess
+        CmdMyTestFileLoadSuccess,
+        CmdMyTestStartHelp,
+        CmdMyTestStartTime
     }
 
     public class MePhItLocalization
@@ -244,6 +246,12 @@ namespace MePhIt
                                 break;
                             case "CmdMyTestFileLoadSuccess":
                                 localizedMessages[language].Add(MessageID.CmdMyTestFileLoadSuccess, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestStartHelp":
+                                localizedMessages[language].Add(MessageID.CmdMyTestStartHelp, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestStartTime":
+                                localizedMessages[language].Add(MessageID.CmdMyTestStartTime, jsonReader.Value as string);
                                 break;
                             default:
                                 break;

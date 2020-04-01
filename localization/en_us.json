@@ -20,6 +20,8 @@
   "CmdSrvrOrgRoleStudent": "student",
   "CmdMyTestTestsSearch": ":information_source: Searching for MyTest files:",
   "CmdMyTestTestsNotFound": ":warning: Tests not found!",
-  "CmdMyTestFileLoadSuccess": ":information_source: Test loaded **{0}**"
+  "CmdMyTestFileLoadSuccess": ":information_source: Test loaded **{0}**",
+  "CmdMyTestStartHelp": ":warning:  **IMPORTANT** Multi-choice questions test is about to commence.\n\n:question: **1**. *Questions will be marked with this symbol.*\n:one: Answers will have number emojis on the left\n:two: To select the answer press on reaction emoji below this post\n:three: Questions may have several correct answers. You have to press on their corresponding emojis to select them\n:four: Test is limited in time. After the test time elapsed {0} won't accept any answers.\n:five: While the test time is ticking you may change your answer choices as many times as you wish\n:six: If you feel confident in your answers you may finish the test early by typing command `{1}`\n\n*Test will start in* _**{2}**_ *min.*",
+  "CmdMyTestStartTime": ":clock2:  Test time: **{0}** min"
 }
 
