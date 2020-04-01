@@ -13,6 +13,73 @@ namespace MePhIt
     internal static class MePhItUtilities
     {
         // ------------ ROLE MANAGEMENT ------------
+        /// <summary>
+        /// Create temporary role on the server for a specific user
+        /// </summary>
+        /// <param name="server">Discord server</param>
+        /// <param name="user">Server member</param>
+        /// <returns></returns>
+        public static async Task<DiscordRole> CreateTemporaryRoleAsync(DiscordGuild server, DiscordUser user)
+        {
+            var tempRoleName = user.Username;
+            var tempRolePermissions = Permissions.AccessChannels | Permissions.SendMessages | Permissions.ReadMessageHistory;
+            return await server.CreateRoleAsync(tempRoleName, tempRolePermissions, null, false, false);
+        }
+
+        /// <summary>
+        /// Create temporary roles on the server for the multiple users
+        /// </summary>
+        /// <param name="server">Discord server</param>
+        /// <param name="users">User list</param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<(DiscordUser User, DiscordRole Role)>> CreateTemporaryRolesAsync(DiscordGuild server, IEnumerable<DiscordUser> users)
+        {
+            var tempRoles = new List<(DiscordUser User, DiscordRole Role)>();
+            foreach(var user in users)
+            {
+                var tempRoleName = user.Username;
+                var tempRolePermissions = Permissions.AccessChannels | Permissions.SendMessages | Permissions.ReadMessageHistory;
+                var tempRole = await server.CreateRoleAsync(tempRoleName, tempRolePermissions, null, false, false);
+                tempRoles.Add((user, tempRole));
+            }
+
+            return tempRoles;
+        }
+
+        public static async Task DeleteTemporaryRolesAsync(IEnumerable<DiscordRole> roles)
+        {
+            foreach(var role in roles)
+            {
+                role.DeleteAsync();
+            }
+        }
+
+        public static async Task CreateTemproraryChannelsAsync(DiscordGuild server, string categoryName, IEnumerable<(string Name, bool IsAudio)> channels)
+        {
+            DiscordChannel category = null;
+            try
+            {
+                category = await server.CreateChannelCategoryAsync(categoryName);
+            }
+            catch(Exception e)
+            {
+
+            }
+            finally
+            {
+                foreach(var channel in channels)
+                {
+                    if(channel.IsAudio)
+                    {
+                        server.CreateVoiceChannelAsync(channel.Name, category);
+                    }
+                    else
+                    {
+                        server.CreateTextChannelAsync(channel.Name, category);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the *student* role on specific server
@@ -76,7 +143,7 @@ namespace MePhIt
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<(DiscordUser User, bool IsOnline)>> GetStudents(DiscordGuild server)
+        public static async Task<IEnumerable<(DiscordUser User, bool IsOnline)>> GetStudentsAsync(DiscordGuild server)
         {
             var students = new List<(DiscordUser, bool)>();
             var roleStudent = GetRoleStudent(server);
@@ -100,9 +167,9 @@ namespace MePhIt
         /// Gets online students only
         /// </summary>
         /// <returns></returns>
-        public static async Task<IEnumerable<DiscordUser>> GetStudentsOnline(DiscordGuild server)
+        public static async Task<IEnumerable<DiscordUser>> GetStudentsOnlineAsync(DiscordGuild server)
         {
-            var students = await GetStudents(server);
+            var students = await GetStudentsAsync(server);
             var studentsOnline = new List<DiscordUser>();
             foreach(var student in students)
             {
