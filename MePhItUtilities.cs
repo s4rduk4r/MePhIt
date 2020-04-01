@@ -12,6 +12,8 @@ namespace MePhIt
     /// </summary>
     internal static class MePhItUtilities
     {
+        // ------------ ROLE MANAGEMENT ------------
+
         /// <summary>
         /// Gets the *student* role on specific server
         /// </summary>
@@ -66,6 +68,9 @@ namespace MePhIt
             return null;
         }
 
+
+        // ------------ STUDENTS ------------
+
         /// <summary>
         /// Gets student's list on the server
         /// </summary>
@@ -108,6 +113,9 @@ namespace MePhIt
             }
             return studentsOnline;
         }
+
+
+        // ------------ EMOJI ------------
 
         /// <summary>
         /// Convert integer in range [0; 10] to emoji
