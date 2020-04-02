@@ -286,7 +286,29 @@ namespace MePhIt.Commands
             var tempChannels = Settings[server].TempTestChannelGrp;
             var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
             // Send Questions to the test channels
+            var sendTasks = new List<Task<(DiscordMember Student, IList<DiscordMessage> Messages)>>();
+            foreach (var tempChannel in tempChannels)
+            {
+                var task = SendTestQuestionsToStudentAsync(tempChannel.Key, tempChannel.Value);
+                sendTasks.Add(task);
+            }
+
+            // Collect the messages sent for each student
+            foreach(var task in sendTasks)
+            {
+                var taskResult = task.GetAwaiter().GetResult();
+                testMessages[taskResult.Student] = taskResult.Messages;
+            }
+
+            Settings[server].TempTestChannelQuestions = testMessages;
+        }
+
+        private async Task<(DiscordMember Student, IList<DiscordMessage> Messages)> SendTestQuestionsToStudentAsync(DiscordMember student, DiscordChannel tempChannel)
+        {
+            var server = student.Guild;
+            var test = Settings[server].TestState;
             var questions = test.Questions;
+            var testMessages = new List<DiscordMessage>();
             foreach (var question in questions)
             {
                 // Question
@@ -296,29 +318,25 @@ namespace MePhIt.Commands
                 {
                     msg += string.Format(answerTextFormat, NumberToEmoji(question.Answers.IndexOf(answer) + 1), answer.Text) + "\n";
                 }
-                foreach (var tempChannel in tempChannels)
+                
+                var message = await tempChannel.SendMessageAsync(msg);
+                for (int i = 1; i <= question.Answers.Count; i++)
                 {
-                    var message = await tempChannel.Value.SendMessageAsync(msg);
-                    for (int i = 1; i <= question.Answers.Count; i++)
-                    {
-                        await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
-                    }
+                    await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
+                }
 
-                    // Store messages for each student
-                    var student = tempChannel.Key;
-                    try
-                    {
-                        testMessages[student].Add(message);
-                    }
-                    catch (Exception)
-                    {
-                        testMessages[student] = new List<DiscordMessage>();
-                        testMessages[student].Add(message);
-                    }
+                // Store messages for each student
+                try
+                {
+                    testMessages.Add(message);
+                }
+                catch (Exception)
+                {
+                    testMessages = new List<DiscordMessage>();
+                    testMessages.Add(message);
                 }
             }
-
-            Settings[server].TempTestChannelQuestions = testMessages;
+            return (student, testMessages);
         }
 
 
