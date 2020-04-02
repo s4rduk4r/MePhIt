@@ -14,6 +14,7 @@ using MePhIt.Commands.MyTest;
 
 using MyTestLib;
 
+using System.Linq;
 
 namespace MePhIt.Commands
 {
@@ -242,15 +243,9 @@ namespace MePhIt.Commands
             {// Pre-test event
 
                 timer.StartTest();
-                // 6. Throw all of the questions at their channels
+                // 6. Throw all of the questions at student's channels
                 // Remember message IDs to read student's answers from them
-                if (!timer.QuestionsSent)
-                {
-                    timer.CommandsMyTest.SendTestQuestionsAsync(timer.CommandsMyTest.GetServer(timer));
-                    timer.QuestionsSent = true;
-                    return;
-                }
-                return;
+                timer.CommandsMyTest.SendTestQuestionsAsync(timer.CommandsMyTest.GetServer(timer));
             }
             else
             {// Post-test event
