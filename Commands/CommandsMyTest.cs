@@ -301,10 +301,12 @@ namespace MePhIt.Commands
         {
             var server = student.Guild;
             var test = Settings[server].TestState;
-            var questions = test.Questions;
+            test.Shuffle();
+            var questions = new List<TestQuestion>(test.Questions);
             var testMessages = new List<DiscordMessage>();
             foreach (var question in questions)
             {
+                question.Shuffle(new Random(Task.CurrentId == null ? 0 : (int)Task.CurrentId));
                 // Question
                 var msg = string.Format($"{questionTextFormat}\n", questions.IndexOf(question) + 1, question.Text);
                 // Answers
