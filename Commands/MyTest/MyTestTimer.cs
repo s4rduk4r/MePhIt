@@ -13,10 +13,6 @@ namespace MePhIt.Commands.MyTest
         /// Test started flag. Changes behaviour from pre-test to testing
         /// </summary>
         public bool TestStarted { get; private set; } = false;
-        /// <summary>
-        /// Questions sent flag. If not set, then sending only messages
-        /// </summary>
-        public bool QuestionsSent { get; set; } = false;
         public CommandsMyTest CommandsMyTest { get; private set; } = null;
         
         public readonly int TimeTick = 1000; //ms
