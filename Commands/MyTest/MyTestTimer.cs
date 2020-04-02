@@ -13,9 +13,17 @@ namespace MePhIt.Commands.MyTest
         /// Test started flag. Changes behaviour from pre-test to testing
         /// </summary>
         public bool TestStarted { get; private set; } = false;
+        /// <summary>
+        /// Questions sent flag. If not set, then sending only messages
+        /// </summary>
+        public bool QuestionsSent { get; set; } = false;
         public CommandsMyTest CommandsMyTest { get; private set; } = null;
         
         public readonly int TimeTick = 1000; //ms
+        /// <summary>
+        /// Passed time counter
+        /// </summary>
+        public int TimePassed { get; set; } = 0;
 
         /// <summary>
         /// Sets test time for a given server. Restarts the timer with the new Interval set
@@ -25,7 +33,7 @@ namespace MePhIt.Commands.MyTest
         {
             var server = CommandsMyTest.GetServer(this);
             Stop();
-            Interval = CommandsMyTest.TestStates[server].Time * 1e3;
+            Interval = CommandsMyTest.Settings[server].TestState.Time * 1e3;
             TestStarted = true;
             Start();
         }

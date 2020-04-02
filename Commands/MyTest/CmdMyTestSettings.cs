@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using MyTestLib;
 
 namespace MePhIt.Commands.MyTest
 {
@@ -12,6 +13,9 @@ namespace MePhIt.Commands.MyTest
     /// </summary>
     public class CmdMyTestSettings
     {
+        public TestState TestState { get; set; } = null;
+        public IDictionary<DiscordMember, TestResults> TestResults { get; set; } = new Dictionary<DiscordMember, TestResults>();
+
         /// <summary>
         /// Test channel group
         /// </summary>

@@ -27,16 +27,6 @@ namespace MePhIt.Commands
     [RequirePermissions(Permissions.Administrator)]
     public class CommandsMyTest : BaseCommandModule
     {
-        /// <summary>
-        /// Ongoing MyTest tests
-        /// </summary>
-        public IDictionary<DiscordGuild, TestState> TestStates = new ConcurrentDictionary<DiscordGuild, TestState>();
-
-        /// <summary>
-        /// Results of the test completion
-        /// </summary>
-        public IDictionary<DiscordGuild, TestResults> TestResults = new ConcurrentDictionary<DiscordGuild, TestResults>();
-
         // Shortcuts
         private MePhItBot Bot = MePhItBot.Bot;
         private MePhItSettings BotSettings = MePhItBot.Bot.Settings;
@@ -127,9 +117,12 @@ namespace MePhIt.Commands
             try
             {
                 filePath = Path.Combine(BotSettings.MyTestFolder, filePath);
-                var test = new TestState();
-                test.LoadTest(filePath);
-                TestStates[commandContext.Guild] = test;
+                //var test = new TestState();
+                //test.LoadTest(filePath);
+                Settings.TryAdd(commandContext.Guild, new CmdMyTestSettings());
+                Settings[commandContext.Guild].TestState = new TestState();
+                Settings[commandContext.Guild].TestState.LoadTest(filePath);
+                var test = Settings[commandContext.Guild].TestState;
                 var msg = string.Format(Localization.Message(commandContext.Guild, MessageID.CmdMyTestFileLoadSuccess), test.Name);
                 await commandContext.Channel.SendMessageAsync(msg);
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
@@ -150,28 +143,35 @@ namespace MePhIt.Commands
             channelInfoMessages = channelInfoMessages == null ? commandContext.Channel : channelInfoMessages;
 
             // 1. Get loaded test
-            TestState test;
-            if(!TestStates.TryGetValue(commandContext.Guild, out test))
+            TestState test = null;
+            CmdMyTestSettings settings;
+
+            if(!Settings.TryGetValue(commandContext.Guild, out settings) || settings.TestState == null)
             {
                 await commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
                 return;
             }
+
+            test = settings.TestState;
+
             // 2. Get a list of students online
             var students = await GetStudentsOnlineAsync(commandContext.Guild);
+            foreach(var student in students)
+            {
+                Settings[commandContext.Guild].TestResults[student as DiscordMember] = new TestResults(Settings[commandContext.Guild].TestState);
+            }
 
             // 3. Create test channels personal for each student
             // Permission to read only for this specific student
             // 3.1. Create MyTest channel category
             // 3.2. Create text channels with names corresponding to student's displayed name
             // 3.3 Store created temporary channels
-            Settings[commandContext.Guild] = new CmdMyTestSettings();
-            var tempTestChannelGrp = await CreateTemporaryTestChannelGroup(commandContext, students);
-            Settings[commandContext.Guild].TempTestChannelGrp = tempTestChannelGrp;
-            var tempChannels = tempTestChannelGrp;
+            Settings[commandContext.Guild].TempTestChannelGrp = await CreateTemporaryTestChannelGroup(commandContext, students);
+            var tempChannels = Settings[commandContext.Guild].TempTestChannelGrp;
 
             // 3.4. Inform students to join their corresponding channels
             var channelMentions = "";
-            foreach (var mention in GetChannelMentions(tempTestChannelGrp.Values))
+            foreach (var mention in GetChannelMentions(tempChannels.Values))
             {
                 channelMentions += mention;
             }
@@ -186,8 +186,6 @@ namespace MePhIt.Commands
             await channelInfoMessages.SendMessageAsync($"{commandContext.Guild.EveryoneRole.Mention}\n{msg}");
 
 
-            // 4. Throw all of the questions at their channels
-            // Remember message IDs to read student's answers from them
             // Test name and time
             msg = $"{EmojiInfo} {test.Name}\n";
             var testTime = test.Time != TestState.TimeInfinite ? new TimeSpan(0, 0, test.Time).TotalMinutes.ToString() : "∞";
@@ -197,44 +195,7 @@ namespace MePhIt.Commands
                 tempChannel.Value.SendMessageAsync($"{tempChannel.Key.Mention}\n{msg}");
             }
 
-            var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
-
-            // Send Questions to the test channels
-            var questions = test.Questions;
-            foreach (var question in questions)
-            {
-                // Question
-                msg = string.Format($"{questionTextFormat}\n", questions.IndexOf(question) + 1, question.Text);
-                // Answers
-                foreach (var answer in question.Answers)
-                {
-                    msg += string.Format(answerTextFormat, NumberToEmoji(question.Answers.IndexOf(answer) + 1), answer.Text) + "\n";
-                }
-                foreach(var tempChannel in tempChannels)
-                {
-                    var message = await tempChannel.Value.SendMessageAsync(msg);
-                    for (int i = 1; i <= question.Answers.Count; i++)
-                    {
-                        await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
-                    }
-                    
-                    // Store messages for each student
-                    var student = tempChannel.Key;
-                    try
-                    {
-                        testMessages[student].Add(message);
-                    }
-                    catch(Exception e)
-                    {
-                        testMessages[student] = new List<DiscordMessage>();
-                        testMessages[student].Add(message);
-                    }
-                }
-            }
-
-            Settings[commandContext.Guild].TempTestChannelQuestions = testMessages;
-
-            // 5. Register callback for test start/stop event
+            // 4. Register callback for test start/stop event
             try
             {
                 var mtTimer = new MyTestTimer(this, new TimeSpan(0, timeoutBeforeTestMinutes, 0).TotalMilliseconds);
@@ -248,7 +209,7 @@ namespace MePhIt.Commands
                 return;
             }
 
-            // 6. Register test start to enable the *ready* command from the student
+            // 5. Register test start to enable the *ready* command from the student
             commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
         }
 
@@ -280,23 +241,98 @@ namespace MePhIt.Commands
             if(!timer.TestStarted)
             {
                 timer.StartTest();
+                // 6. Throw all of the questions at their channels
+                // Remember message IDs to read student's answers from them
+                if (!timer.QuestionsSent)
+                {
+                    SendTestQuestionsAsync(timer.CommandsMyTest, timer.CommandsMyTest.GetServer(timer));
+                    timer.QuestionsSent = true;
+                    return;
+                }
                 return;
             }
             else
             {
-                // 8. At the end of the test collect all the reactions from the students 
+                timer.Stop();
+                // 7. At the end of the test collect all the reactions from the students 
                 // and process them as answers
+                var cmt = timer.CommandsMyTest;
+                var srvr = cmt.GetServer(timer);
+                var settings = cmt.Settings[srvr];
+                //var testResults = 
 
-                // 9. Present the question-answer statistics to the students
+                foreach(var student in settings.TempTestChannelQuestions)
+                {
+                    foreach(var question in student.Value)
+                    {
+                        foreach(var react in question.Reactions)
+                        {
+                            if(react.Count > 1)
+                            {
 
-                // 10. Present the question-answer statistics to the teacher
+                            }
+                        }
+                    }
+                }
 
-                // 11. Form the marks earned
+                // 8. Present the question-answer statistics to the students
+
+                // 9. Present the question-answer statistics to the teacher
+
+                // 10. Form the marks earned
 
             }
 
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Sends all test questions and answers to them
+        /// </summary>
+        /// <param name="server"></param>
+        /// <returns></returns>
+        private async Task SendTestQuestionsAsync(CommandsMyTest cmt, DiscordGuild server)
+        {
+            var test = cmt.Settings[server].TestState;
+            var tempChannels = cmt.Settings[server].TempTestChannelGrp;
+            var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
+            // Send Questions to the test channels
+            var questions = test.Questions;
+            foreach (var question in questions)
+            {
+                // Question
+                var msg = string.Format($"{questionTextFormat}\n", questions.IndexOf(question) + 1, question.Text);
+                // Answers
+                foreach (var answer in question.Answers)
+                {
+                    msg += string.Format(answerTextFormat, NumberToEmoji(question.Answers.IndexOf(answer) + 1), answer.Text) + "\n";
+                }
+                foreach (var tempChannel in tempChannels)
+                {
+                    var message = await tempChannel.Value.SendMessageAsync(msg);
+                    for (int i = 1; i <= question.Answers.Count; i++)
+                    {
+                        await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
+                    }
+
+                    // Store messages for each student
+                    var student = tempChannel.Key;
+                    try
+                    {
+                        testMessages[student].Add(message);
+                    }
+                    catch (Exception)
+                    {
+                        testMessages[student] = new List<DiscordMessage>();
+                        testMessages[student].Add(message);
+                    }
+                }
+            }
+
+            cmt.Settings[server].TempTestChannelQuestions = testMessages;
+        }
+
+
 
         private async Task<IDictionary<DiscordMember, DiscordChannel>> 
             CreateTemporaryTestChannelGroup(CommandContext commandContext, IEnumerable<DiscordUser> students)
