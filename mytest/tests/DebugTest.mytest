@@ -1,0 +1,31 @@
+﻿# This test is designed for debug purposes
+Test = Debug test (english)
+# Test author
+Author = Andrey N. Glushenkov
+# Creation/Modification date. Must be in format DD.MM.YYYY
+Date = 02.04.2020
+# 3 minutes
+Time = 180
+Mode = Punish
+# ----- QUESIONS -----
+Question = How much is 2 + 2?
+Value = 100
+Answer+ = 4
+Answer = 3
+Answer = 5
+Answer = -1
+Answer = 0
+Question = Mathematical objects can be:
+Value = 100
+Answer+ = Rings
+Answer+ = Linear spaces
+Answer+ = Matrices
+Answer+ = Vectors
+Answer = Strings
+Answer = Color
+Question = Famous scientists of XX century:
+Value = 100
+Answer+ = V.A. Fock
+Answer+ = M.Planck
+Answer = J.C. Maxwell
+Answer = I. Newton
