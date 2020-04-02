@@ -239,20 +239,22 @@ namespace MePhIt.Commands
         {
             var timer = sender as MyTestTimer;
             if(!timer.TestStarted)
-            {
+            {// Pre-test event
+
                 timer.StartTest();
                 // 6. Throw all of the questions at their channels
                 // Remember message IDs to read student's answers from them
                 if (!timer.QuestionsSent)
                 {
-                    SendTestQuestionsAsync(timer.CommandsMyTest, timer.CommandsMyTest.GetServer(timer));
+                    timer.CommandsMyTest.SendTestQuestionsAsync(timer.CommandsMyTest.GetServer(timer));
                     timer.QuestionsSent = true;
                     return;
                 }
                 return;
             }
             else
-            {
+            {// Post-test event
+
                 timer.Stop();
                 // 7. At the end of the test collect all the reactions from the students 
                 // and process them as answers
@@ -261,19 +263,6 @@ namespace MePhIt.Commands
                 var settings = cmt.Settings[srvr];
                 //var testResults = 
 
-                foreach(var student in settings.TempTestChannelQuestions)
-                {
-                    foreach(var question in student.Value)
-                    {
-                        foreach(var react in question.Reactions)
-                        {
-                            if(react.Count > 1)
-                            {
-
-                            }
-                        }
-                    }
-                }
 
                 // 8. Present the question-answer statistics to the students
 
@@ -291,10 +280,10 @@ namespace MePhIt.Commands
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        private async Task SendTestQuestionsAsync(CommandsMyTest cmt, DiscordGuild server)
+        private async Task SendTestQuestionsAsync(DiscordGuild server)
         {
-            var test = cmt.Settings[server].TestState;
-            var tempChannels = cmt.Settings[server].TempTestChannelGrp;
+            var test = Settings[server].TestState;
+            var tempChannels = Settings[server].TempTestChannelGrp;
             var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
             // Send Questions to the test channels
             var questions = test.Questions;
@@ -329,7 +318,7 @@ namespace MePhIt.Commands
                 }
             }
 
-            cmt.Settings[server].TempTestChannelQuestions = testMessages;
+            Settings[server].TempTestChannelQuestions = testMessages;
         }
 
 
