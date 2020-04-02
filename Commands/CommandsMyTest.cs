@@ -261,9 +261,8 @@ namespace MePhIt.Commands
                 var cmt = timer.CommandsMyTest;
                 var srvr = cmt.GetServer(timer);
                 var settings = cmt.Settings[srvr];
-                //var testResults = 
 
-
+            
                 // 8. Present the question-answer statistics to the students
 
                 // 9. Present the question-answer statistics to the teacher
@@ -296,7 +295,7 @@ namespace MePhIt.Commands
             // Collect the messages sent for each student
             foreach(var task in sendTasks)
             {
-                var taskResult = task.GetAwaiter().GetResult();
+                var taskResult = await task;
                 testMessages[taskResult.Student] = taskResult.Messages;
             }
 
