@@ -29,7 +29,9 @@ namespace MePhIt.Commands.MyTest
         {
             var server = CommandsMyTest.GetServer(this);
             Stop();
-            Interval = CommandsMyTest.Settings[server].TestState.Time * 1e3;
+            var test = CommandsMyTest.Settings[server].TestState.GetEnumerator();
+            test.MoveNext();
+            Interval = test.Current.Value.Time * 1e3;
             TestStarted = true;
             Start();
         }

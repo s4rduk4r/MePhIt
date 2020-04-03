@@ -13,8 +13,10 @@ namespace MePhIt.Commands.MyTest
     /// </summary>
     public class CmdMyTestSettings
     {
-        public TestState TestState { get; set; } = null;
-        public IDictionary<DiscordMember, TestResults> TestResults { get; set; } = new Dictionary<DiscordMember, TestResults>();
+        /// <summary>
+        /// Test state for each student
+        /// </summary>
+        public IDictionary<DiscordMember, TestState> TestState { get; set; } = new ConcurrentDictionary<DiscordMember, TestState>();
 
         /// <summary>
         /// Test channel group
@@ -23,7 +25,8 @@ namespace MePhIt.Commands.MyTest
         /// <summary>
         /// Test question messages
         /// </summary>
-        public IDictionary<DiscordMember, IList<DiscordMessage>> TempTestChannelQuestions { get; set; } = new ConcurrentDictionary<DiscordMember, IList<DiscordMessage>>();
+        public IDictionary<DiscordMember, IList<(TestQuestion Question, ulong MessageId)>> TempTestChannelQuestions { get; set; } 
+                                        = new ConcurrentDictionary<DiscordMember, IList<(TestQuestion Question, ulong MessageId)>>();
         /// <summary>
         /// Timers
         /// </summary>

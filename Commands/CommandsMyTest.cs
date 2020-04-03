@@ -34,6 +34,7 @@ namespace MePhIt.Commands
         private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
 
         // Local Settings
+        public IDictionary<DiscordGuild, TestState> TestLoaded = new ConcurrentDictionary<DiscordGuild, TestState>();
         public IDictionary<DiscordGuild, CmdMyTestSettings> Settings = new ConcurrentDictionary<DiscordGuild, CmdMyTestSettings>();
 
         // ------- Time settings -------
@@ -117,20 +118,23 @@ namespace MePhIt.Commands
 
             try
             {
+                // Load test
                 filePath = Path.Combine(BotSettings.MyTestFolder, filePath);
-                //var test = new TestState();
-                //test.LoadTest(filePath);
+                var test = new TestState();
+                test.LoadTest(filePath);
+                if(!TestLoaded.TryAdd(commandContext.Guild, test))
+                {
+                    throw new FileLoadException($"Unable to load test from {filePath}");
+                }
+
                 Settings.TryAdd(commandContext.Guild, new CmdMyTestSettings());
-                Settings[commandContext.Guild].TestState = new TestState();
-                Settings[commandContext.Guild].TestState.LoadTest(filePath);
-                var test = Settings[commandContext.Guild].TestState;
                 var msg = string.Format(Localization.Message(commandContext.Guild, MessageID.CmdMyTestFileLoadSuccess), test.Name);
                 await commandContext.Channel.SendMessageAsync(msg);
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
             }
             catch(Exception e)
             {
-                await commandContext.Channel.SendMessageAsync($":bangbang: {e.Message}");
+                await commandContext.Channel.SendMessageAsync($"{EmojiError} {e.Message}");
                 commandContext.Message.CreateReactionAsync(Bot.ReactFail);
             }
         }
@@ -144,7 +148,7 @@ namespace MePhIt.Commands
             channelInfoMessages = channelInfoMessages == null ? commandContext.Channel : channelInfoMessages;
 
             // 1. Get loaded test
-            TestState test = null;
+            TestState test = TestLoaded[commandContext.Guild]; ;
             CmdMyTestSettings settings;
 
             if(!Settings.TryGetValue(commandContext.Guild, out settings) || settings.TestState == null)
@@ -153,13 +157,11 @@ namespace MePhIt.Commands
                 return;
             }
 
-            test = settings.TestState;
-
             // 2. Get a list of students online
             var students = await GetStudentsOnlineAsync(commandContext.Guild);
             foreach(var student in students)
             {
-                Settings[commandContext.Guild].TestResults[student as DiscordMember] = new TestResults(Settings[commandContext.Guild].TestState);
+                Settings[commandContext.Guild].TestState[student as DiscordMember] = test.Clone() as TestState;
             }
 
             // 3. Create test channels personal for each student
@@ -236,12 +238,12 @@ namespace MePhIt.Commands
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             var timer = sender as MyTestTimer;
             if(!timer.TestStarted)
             {// Pre-test event
-
+                // Start pre-test timer
                 timer.StartTest();
                 // 6. Throw all of the questions at student's channels
                 // Remember message IDs to read student's answers from them
@@ -257,16 +259,172 @@ namespace MePhIt.Commands
                 var srvr = cmt.GetServer(timer);
                 var settings = cmt.Settings[srvr];
 
-            
+                var students = settings.TempTestChannelQuestions.Keys;
+
+                var testResults = await CollectAnswersAsync(settings, students);
+
+
                 // 8. Present the question-answer statistics to the students
+                var msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestFinished);
+                var msgQuestionStrFormat = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestQuestionResult);
+                var msgTestResultsStrFormat = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestTotalResults);
+
+                foreach(var student in students)
+                {
+                    var studentResult = testResults.First(sr => sr.Student == student).Results;
+                    var messages = settings.TempTestChannelQuestions[student];
+
+                    SendTestResultStatisticsAsync(settings.TempTestChannelGrp[student], messages, studentResult);
+                }
 
                 // 9. Present the question-answer statistics to the teacher
 
                 // 10. Form the marks earned
+                
+            }
+        }
 
+        private async Task SendTestResultStatisticsAsync(DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
+        {
+            // ---- HEADER ----
+            var msg = $"{Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestFinished)}\n";
+
+            // ---- QUESTIONS ----
+            var questions = studentResults.TestState.Questions;
+            foreach (var question in questions)
+            {
+                foreach(var message in messages)
+                {
+                    if(message.Question == question)
+                    {
+                        var dmsg = await studentChannel.GetMessageAsync(message.MessageId);
+                        var uri = dmsg.JumpLink;
+                        var strQuestionFormat = Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestQuestionResult);
+                        var questionNumber = questions.IndexOf(question) + 1;
+                        var score = studentResults.QuestionScore(question);
+                        var accuracy = studentResults.QuestionScore(question) / question.Value;
+                        accuracy = accuracy > 0 ? accuracy : 0;
+                        msg += string.Format(strQuestionFormat, questionNumber, uri, accuracy, score);
+                    }
+                }
             }
 
-            throw new NotImplementedException();
+            // ---- SUMMARY ----
+            var strSummaryFormat = Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestTotalResults);
+            var totalAccuracy = studentResults.Score / studentResults.TestState.Value;
+            var mark = GetMark(studentChannel.Guild, totalAccuracy);
+            msg += string.Format(strSummaryFormat, totalAccuracy, studentResults.Score, studentResults.TestState.Value, mark.Mark, mark.NationalMark, mark.ECTS) ;
+
+            studentChannel.SendMessageAsync(msg);
+        }
+
+        (string Mark, string NationalMark, int ECTS) GetMark(in DiscordGuild server, in double accuracy)
+        {
+            /*
+             * >= 90    A       [90; 100]
+             * >= 82    B       [82; 89]
+             * >= 74    C       [74; 81]
+             * >= 64    D       [64; 73]
+             * >= 60    E       [60; 63]
+             * >= 35    F       [35; 59]
+             * >= 1     Fx      [1; 34]
+             */
+            var mark5scale = accuracy * 5;
+            var markNational = "";
+            var markECTS = (int)Math.Round(20 * mark5scale);
+            var mark = "";
+
+            if (mark5scale == 5)
+            {
+                markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark100);
+            }
+            var value = (int)Math.Round(mark5scale + 0.001);
+            switch (value)
+            {
+                case 5:
+                    mark = NumberToEmoji(5);
+                    markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark5);
+                    break;
+                case 4:
+                    mark = NumberToEmoji(4);
+                    markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark4);
+                    break;
+                case 3:
+                    mark = NumberToEmoji(3);
+                    markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark3);
+                    break;
+                case 2:
+                    mark = NumberToEmoji(2);
+                    markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark2);
+                    break;
+            }
+            if (value > 0 && value < 2)
+            {
+                mark = NumberToEmoji(1);
+                markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark1);
+            }
+            if(value <= 0)
+            {
+                mark = NumberToEmoji(0);
+                markNational = Bot.Settings.Localization.Message(server, MessageID.CmdMyTestMark0);
+                markECTS = 0;
+            }
+
+            return (mark, markNational, markECTS);
+        }
+
+        /// <summary>
+        /// Collect answers from the students
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="student"></param>
+        /// <returns></returns>
+        private async Task<ICollection<(DiscordMember Student, TestResults Results)>> CollectAnswersAsync(CmdMyTestSettings settings, ICollection<DiscordMember> students)
+        {
+            var resultStatistics = new List<(DiscordMember Student, TestResults Results)>();
+
+            var tasks = new List<Task<(DiscordMember Student, TestResults Results)>>();
+            foreach (var student in students)
+            {
+                tasks.Add(CollectAnswersFromStudentAsync(settings, student));
+            }
+
+            foreach(var task in tasks)
+            {
+                resultStatistics.Add(await task);
+            }
+
+            return resultStatistics;
+        }
+
+        /// <summary>
+        /// Collect answers from the student
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <param name="student"></param>
+        /// <returns></returns>
+        private async Task<(DiscordMember Student, TestResults Results)> CollectAnswersFromStudentAsync(CmdMyTestSettings settings, DiscordMember student)
+        {
+            foreach (var data in settings.TempTestChannelQuestions[student])
+            {
+                var answers = new List<TestAnswer>();
+                // BEGIN ---- Convert reactions to answers ----
+                var message = await settings.TempTestChannelGrp[student].GetMessageAsync(data.MessageId);
+
+                foreach (var r in message.Reactions)
+                {
+                    // If this answer has been selected, then store it
+                    if (r.Count == 2)
+                    {
+                        int i = EmojiToNumber(Bot.Settings.Discord, r.Emoji.Name);
+                        var answer = data.Question.Answers.ElementAt(i - 1);
+                        answers.Add(answer);
+                    }
+                }
+                // END ---- Convert reactions to answers ----
+                settings.TestState[student].Results.Answer(data.Question, answers);
+            }
+            return (student, settings.TestState[student].Results);
         }
 
         /// <summary>
@@ -278,9 +436,9 @@ namespace MePhIt.Commands
         {
             var test = Settings[server].TestState;
             var tempChannels = Settings[server].TempTestChannelGrp;
-            var testMessages = new Dictionary<DiscordMember, IList<DiscordMessage>>();
+            var testMessages = new Dictionary<DiscordMember, IList<(TestQuestion Question, ulong MessageId)>> ();
             // Send Questions to the test channels
-            var sendTasks = new List<Task<(DiscordMember Student, IList<DiscordMessage> Messages)>>();
+            var sendTasks = new List<Task<(DiscordMember Student, IList<(TestQuestion Question, ulong MessageId)> Messages)>>();
             foreach (var tempChannel in tempChannels)
             {
                 var task = SendTestQuestionsToStudentAsync(tempChannel.Key, tempChannel.Value);
@@ -297,16 +455,17 @@ namespace MePhIt.Commands
             Settings[server].TempTestChannelQuestions = testMessages;
         }
 
-        private async Task<(DiscordMember Student, IList<DiscordMessage> Messages)> SendTestQuestionsToStudentAsync(DiscordMember student, DiscordChannel tempChannel)
+        private async Task<(DiscordMember Student, IList<(TestQuestion Question, ulong MessageId)> Messages)> 
+            SendTestQuestionsToStudentAsync(DiscordMember student, DiscordChannel tempChannel)
         {
             var server = student.Guild;
-            var test = Settings[server].TestState;
+            var test = Settings[server].TestState[student];
             test.Shuffle();
-            var questions = new List<TestQuestion>(test.Questions);
-            var testMessages = new List<DiscordMessage>();
+            var questions = test.Questions;
+            var testMessages = new List<(TestQuestion Question, ulong MessageId)>();
             foreach (var question in questions)
             {
-                question.Shuffle(new Random(Task.CurrentId == null ? 0 : (int)Task.CurrentId));
+                //question.Shuffle(new Random(Task.CurrentId == null ? 0 : (int)Task.CurrentId));
                 // Question
                 var msg = string.Format($"{questionTextFormat}\n", questions.IndexOf(question) + 1, question.Text);
                 // Answers
@@ -316,20 +475,23 @@ namespace MePhIt.Commands
                 }
                 
                 var message = await tempChannel.SendMessageAsync(msg);
+                System.Threading.Thread.Sleep(200);
+
                 for (int i = 1; i <= question.Answers.Count; i++)
                 {
                     await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
+                    System.Threading.Thread.Sleep(50);
                 }
 
                 // Store messages for each student
                 try
                 {
-                    testMessages.Add(message);
+                    testMessages.Add((question, message.Id));
                 }
                 catch (Exception)
                 {
-                    testMessages = new List<DiscordMessage>();
-                    testMessages.Add(message);
+                    testMessages = new List<(TestQuestion Question, ulong MessageId)>();
+                    testMessages.Add((question, message.Id));
                 }
             }
             return (student, testMessages);
