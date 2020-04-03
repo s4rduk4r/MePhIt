@@ -42,7 +42,10 @@ namespace MePhIt
         CmdMyTestFileLoadSuccess,
         CmdMyTestStartHelp,
         CmdMyTestStartTime,
-        CmdMyTestStartTempCategoryName
+        CmdMyTestStartTempCategoryName,
+        CmdMyTestStartTestFinished,
+        CmdMyTestStartTestQuestionResult,
+        CmdMyTestStartTestTotalResults
     }
 
     public class MePhItLocalization
@@ -257,6 +260,15 @@ namespace MePhIt
                                 break;
                             case "CmdMyTestStartTempCategoryName":
                                 localizedMessages[language].Add(MessageID.CmdMyTestStartTempCategoryName, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestStartTestFinished":
+                                localizedMessages[language].Add(MessageID.CmdMyTestStartTestFinished, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestStartTestQuestionResult":
+                                localizedMessages[language].Add(MessageID.CmdMyTestStartTestQuestionResult, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestStartTestTotalResults":
+                                localizedMessages[language].Add(MessageID.CmdMyTestStartTestTotalResults, jsonReader.Value as string);
                                 break;
                             default:
                                 break;
