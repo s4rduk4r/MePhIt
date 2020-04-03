@@ -45,7 +45,14 @@ namespace MePhIt
         CmdMyTestStartTempCategoryName,
         CmdMyTestStartTestFinished,
         CmdMyTestStartTestQuestionResult,
-        CmdMyTestStartTestTotalResults
+        CmdMyTestStartTestTotalResults,
+        CmdMyTestMark0,
+        CmdMyTestMark1,
+        CmdMyTestMark2,
+        CmdMyTestMark3,
+        CmdMyTestMark4,
+        CmdMyTestMark5,
+        CmdMyTestMark100
     }
 
     public class MePhItLocalization
@@ -269,6 +276,27 @@ namespace MePhIt
                                 break;
                             case "CmdMyTestStartTestTotalResults":
                                 localizedMessages[language].Add(MessageID.CmdMyTestStartTestTotalResults, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark0":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark0, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark1":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark1, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark2":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark2, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark3":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark3, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark4":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark4, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark5":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark5, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark100":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark100, jsonReader.Value as string);
                                 break;
                             default:
                                 break;

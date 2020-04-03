@@ -26,5 +26,12 @@
   "CmdMyTestStartTempCategoryName": "---> ТЕСТ ПРОХОДИТ ЗДЕСЬ <----",
   "CmdMyTestStartTestFinished": ":warning: **ТЕСТИРОВАНИЕ ЗАВЕРШЕНО** :warning:\n\n:information_source:  **РЕЗУЛЬТАТЫ**",
   "CmdMyTestStartTestQuestionResult": ":question: **{0}** - {1}\n:pencil:   Точность ответа - {2:P1} ||__Баллы__ {3:F1}||",
-  "CmdMyTestStartTestTotalResults": ":bar_chart: **Итог:**\n**Точных ответов:** {0:P1} ||**Баллы:** {1} из {2}||\n**Оценка:** {3}\n||**Национальная шкала:** {4}||\n||**ECTS**: {5}||"
+  "CmdMyTestStartTestTotalResults": ":bar_chart: **Итог:**\n**Точных ответов:** {0:P1} ||**Баллы:** {1} из {2}||\n**Оценка:** {3}\n||**Национальная шкала:** {4}||\n||**ECTS**: {5}||",
+  "CmdMyTestMark0": "Ужасно!",
+  "CmdMyTestMark1": "Плохо",
+  "CmdMyTestMark2": "Неудовлетворительно",
+  "CmdMyTestMark3": "Удовлетворительно",
+  "CmdMyTestMark4": "Хорошо",
+  "CmdMyTestMark5": "Отлично",
+  "CmdMyTestMark100": "Идеально!"
 }

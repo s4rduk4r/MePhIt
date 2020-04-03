@@ -25,7 +25,14 @@
   "CmdMyTestStartTime": ":clock2:  Test time: **{0}** min",
   "CmdMyTestStartTempCategoryName": "---> TEST GOES HERE <----",
   "CmdMyTestStartTestFinished": ":warning: **TEST IS OVER** :warning:\n\n:information_source:  **RESULTS**",
-  "CmdMyTestStartTestQuestionResult": ":question: **{0}** - {1}\n:pencil:   Accuracy - {2:P1} ||__Score__ {3:F1}||",
-  "CmdMyTestStartTestTotalResults": ":bar_chart: **Summary:**\n**Accurate answers:** {0:P1} ||**Score:** {1} из {2}||\n**Mark:** {3}\n||**National scale:** {4}||\n||**ECTS**: {5}||"
+  "CmdMyTestStartTestQuestionResult": ":question: **{0}** - {1}\n:pencil:   Accuracy - {2:P1} ||__Score__ {3:F1}||\n",
+  "CmdMyTestStartTestTotalResults": ":bar_chart: **Summary:**\n**Accurate answers:** {0:P1} ||**Score:** {1} of {2}||\n**Mark:** {3}\n||**National scale:** {4}||\n||**ECTS**: {5}||",
+  "CmdMyTestMark0": "Terrible!",
+  "CmdMyTestMark1": "Awful",
+  "CmdMyTestMark2": "Unsatisfactory",
+  "CmdMyTestMark3": "Satisfactory",
+  "CmdMyTestMark4": "Good",
+  "CmdMyTestMark5": "Fine",
+  "CmdMyTestMark100": "Excellent!"
 }
 
