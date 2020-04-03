@@ -238,7 +238,7 @@ namespace MePhIt
         /// </summary>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static string NumberToEmoji(int number)
+        public static string NumberToEmoji(in int number)
         {
             var emoji = "";
             switch(number)
@@ -280,6 +280,44 @@ namespace MePhIt
                     break;
             }
             return emoji;
+        }
+
+        /// <summary>
+        /// Convert numeric emoji to number
+        /// </summary>
+        /// <param name="emoji"></param>
+        /// <returns></returns>
+        public static int EmojiToNumber(in DiscordClient client, in string emoji)
+        {
+            for (int i = 0; i <= 10; i++)
+            {
+                var controlEmoji = DiscordEmoji.FromName(client, NumberToEmoji(i));
+                if (controlEmoji == emoji)
+                {
+                    return i;
+                }
+            }
+
+            throw new NotSupportedException("Unknown emoji");
+        }
+
+        /// <summary>
+        /// Convert numeric emoji to number
+        /// </summary>
+        /// <param name="emoji"></param>
+        /// <returns></returns>
+        public static int EmojiToNumber(in DiscordClient client, in DiscordEmoji emoji)
+        {
+            for(int i = 0; i <= 10; i++)
+            {
+                var controlEmoji = DiscordEmoji.FromName(client, NumberToEmoji(i));
+                if(controlEmoji == emoji)
+                {
+                    return i;
+                }
+            }
+
+            throw new NotSupportedException("Unknown emoji");
         }
 
         // Emojis for different types of messages
