@@ -204,7 +204,7 @@ namespace MePhIt
                 {
                     if(role == roleStudent)
                     {
-                        students.Add((user, user.Presence.Status != UserStatus.Offline));
+                        students.Add((user, user.Presence != null && user.Presence.Status != UserStatus.Offline));
                         break;
                     }
                 }
