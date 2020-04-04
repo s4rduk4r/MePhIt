@@ -33,6 +33,7 @@
   "CmdMyTestMark3": "Satisfactory",
   "CmdMyTestMark4": "Good",
   "CmdMyTestMark5": "Fine",
-  "CmdMyTestMark100": "Excellent!"
+  "CmdMyTestMark100": "Excellent!",
+  "CmdMyTestResultsLink" :  ":repeat: Back to results - "
 }
 
