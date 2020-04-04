@@ -18,64 +18,6 @@ namespace MePhIt.Commands
         private IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new ConcurrentDictionary<DiscordGuild, ClassTimeSettings>();
         private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
 
-        [Command("ru")]
-        [Aliases("ru_RU", "russian", "ру", "русский")]
-        [Description("Установить **русский** язык сообщений")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task LanguageSelect_ru_RU(CommandContext commandContext)
-        {
-            ClassTimeSettings localSettings;
-            if(LocalSettings.TryGetValue(commandContext.Guild, out localSettings))
-            {
-                localSettings.Language = LanguageID.ru_RU;
-                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
-            }
-            else
-            {
-                localSettings = new ClassTimeSettings(LocalSettings, commandContext.Channel);
-                localSettings.Language = LanguageID.ru_RU;
-                try
-                {
-                    LocalSettings[commandContext.Guild] = localSettings;
-                    commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
-                }
-                catch(Exception e)
-                {
-                    var errMsg = await commandContext.Channel.SendMessageAsync(e.Message);
-                    await errMsg.CreateReactionAsync(MePhItBot.Bot.ReactFail);
-                }
-            }
-        }
-
-        [Command("en")]
-        [Aliases("en_US", "english", "англ", "английский")]
-        [Description("Установить **английский** язык сообщений\nSet messages to **English US**")]
-        [RequirePermissions(Permissions.Administrator)]
-        public async Task LanguageSelect_en_US(CommandContext commandContext)
-        {
-            ClassTimeSettings localSettings;
-            if (LocalSettings.TryGetValue(commandContext.Guild, out localSettings))
-            {
-                localSettings.Language = LanguageID.en_US;
-                commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
-            }
-            else
-            {
-                localSettings = new ClassTimeSettings(LocalSettings, commandContext.Channel);
-                localSettings.Language = LanguageID.en_US;
-                try
-                {
-                    LocalSettings[commandContext.Guild] = localSettings;
-                    commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
-                }
-                catch (Exception e)
-                {
-                    var errMsg = await commandContext.Channel.SendMessageAsync(e.Message);
-                    await errMsg.CreateReactionAsync(MePhItBot.Bot.ReactFail);
-                }
-            }
-        }
-
         [Command("start")]
         [Aliases("старт")]
         [Description("Начать занятие")]
@@ -157,19 +99,6 @@ namespace MePhIt.Commands
         public async Task List(CommandContext commandContext, DiscordChannel channel = null)
         {
             channel = channel == null ? commandContext.Channel : channel;
-
-            MePhItLocalization localization = null;
-            ClassTimeSettings localSettings = null;
-            try
-            {
-                localSettings = LocalSettings[commandContext.Guild];
-                localization = localSettings.Localization;
-            }
-            catch(Exception e)
-            {
-                LocalSettings[commandContext.Guild] = new ClassTimeSettings(LocalSettings, channel);
-                commandContext.Message.CreateReactionAsync(DiscordEmoji.FromName(commandContext.Client, MePhItUtilities.EmojiWarning));
-            }
 
             var students = await MePhItUtilities.GetStudentsAsync(commandContext.Guild);
             var memberList = "";

@@ -65,6 +65,7 @@ namespace MePhIt.Commands.ClassTime
             BreakDurationInMinutes = breakDurationInMin;
             NotifyBeforeClassEndInMinutes = notifyBeforeClassEndInMin;
             timer.Elapsed += Timer_Elapsed;
+            Language = Localization.Language[channel.Guild];
         }
 
         public ClassTimeSettings(in IDictionary<DiscordGuild, ClassTimeSettings> localSettingsHolder, in DiscordChannel channel)
@@ -72,6 +73,7 @@ namespace MePhIt.Commands.ClassTime
             this.channel = channel;
             this.localSettingsHolder = localSettingsHolder;
             timer.Elapsed += Timer_Elapsed;
+            Language = Localization.Language[channel.Guild];
         }
 
         public enum ClassTimeEventType
