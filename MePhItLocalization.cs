@@ -52,7 +52,8 @@ namespace MePhIt
         CmdMyTestMark3,
         CmdMyTestMark4,
         CmdMyTestMark5,
-        CmdMyTestMark100
+        CmdMyTestMark100,
+        CmdMyTestResultsLink
     }
 
     public class MePhItLocalization
@@ -91,10 +92,10 @@ namespace MePhIt
                 switch(langId)
                 {
                     case LanguageID.ru_RU:
-                        languages.Add("ru_RU");
+                        languages.Add("ru");
                         break;
                     case LanguageID.en_US:
-                        languages.Add("en_US");
+                        languages.Add("en");
                         break;
                 }
             }
@@ -111,10 +112,10 @@ namespace MePhIt
             LanguageID value = LanguageFallback;
             switch(language)
             {
-                case "ru_RU":
+                case "ru":
                     value = LanguageID.ru_RU;
                     break;
-                case "en_US":
+                case "en":
                     value = LanguageID.en_US;
                     break;
             }
@@ -297,6 +298,9 @@ namespace MePhIt
                                 break;
                             case "CmdMyTestMark100":
                                 localizedMessages[language].Add(MessageID.CmdMyTestMark100, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestResultsLink":
+                                localizedMessages[language].Add(MessageID.CmdMyTestResultsLink, jsonReader.Value as string);
                                 break;
                             default:
                                 break;
