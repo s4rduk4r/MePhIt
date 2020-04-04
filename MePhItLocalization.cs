@@ -46,6 +46,7 @@ namespace MePhIt
         CmdMyTestStartTestFinished,
         CmdMyTestStartTestQuestionResult,
         CmdMyTestStartTestTotalResults,
+        CmdMyTestMark,
         CmdMyTestMark0,
         CmdMyTestMark1,
         CmdMyTestMark2,
@@ -277,6 +278,9 @@ namespace MePhIt
                                 break;
                             case "CmdMyTestStartTestTotalResults":
                                 localizedMessages[language].Add(MessageID.CmdMyTestStartTestTotalResults, jsonReader.Value as string);
+                                break;
+                            case "CmdMyTestMark":
+                                localizedMessages[language].Add(MessageID.CmdMyTestMark, jsonReader.Value as string);
                                 break;
                             case "CmdMyTestMark0":
                                 localizedMessages[language].Add(MessageID.CmdMyTestMark0, jsonReader.Value as string);
