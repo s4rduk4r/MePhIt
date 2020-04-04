@@ -284,6 +284,13 @@ namespace MePhIt.Commands
             }
         }
 
+        /// <summary>
+        /// Send test results to the student
+        /// </summary>
+        /// <param name="studentChannel">Temporary student's test channel</param>
+        /// <param name="messages">Messages with questions</param>
+        /// <param name="studentResults">Results of the student</param>
+        /// <returns></returns>
         private async Task SendTestResultStatisticsAsync(DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
         {
             // ---- HEADER ----
@@ -312,15 +319,32 @@ namespace MePhIt.Commands
             // ---- SUMMARY ----
             var strSummaryFormat = Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestTotalResults);
             var totalAccuracy = studentResults.Score / studentResults.TestState.Value;
-            var mark = GetMark(studentChannel.Guild, totalAccuracy);
-            msg += string.Format(strSummaryFormat, totalAccuracy, studentResults.Score, studentResults.TestState.Value, mark.Mark, mark.NationalMark, mark.ECTS) ;
+            var mark = GetMarks(studentChannel.Guild, totalAccuracy);
+            var markECTS = $"{mark.ECTS.Points} {mark.ECTS.Letter}";
+            msg += string.Format(strSummaryFormat, totalAccuracy, studentResults.Score, studentResults.TestState.Value, mark.Mark, mark.NationalMark, markECTS) ;
 
-            studentChannel.SendMessageAsync(msg);
+            var resultMsg = await studentChannel.SendMessageAsync(msg);
+            // Add jump links to the results message
+            foreach(var message in messages)
+            {
+                var dmsg = await studentChannel.GetMessageAsync(message.MessageId);
+                var linkText = Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestResultsLink);
+                linkText += resultMsg.JumpLink;
+                dmsg.ModifyAsync($"{dmsg.Content}\n\n{linkText}");
+                System.Threading.Thread.Sleep(50);
+            }
         }
 
-        (string Mark, string NationalMark, int ECTS) GetMark(in DiscordGuild server, in double accuracy)
+        /// <summary>
+        /// Convert test results into the marks
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="accuracy"></param>
+        /// <returns></returns>
+        (string Mark, string NationalMark, (int Points, string Letter) ECTS) GetMarks(in DiscordGuild server, in double accuracy)
         {
             /*
+             * ECTS mark pts. and letters
              * >= 90    A       [90; 100]
              * >= 82    B       [82; 89]
              * >= 74    C       [74; 81]
@@ -370,7 +394,45 @@ namespace MePhIt.Commands
                 markECTS = 0;
             }
 
-            return (mark, markNational, markECTS);
+            // Get ECTS letters
+            var markECTSletter = "Fx";
+            // A
+            if(markECTS >= 90)
+            {
+                markECTSletter = "A";
+            }
+            // B
+            if(markECTS >= 82 && markECTS <= 89)
+            {
+                markECTSletter = "B";
+            }
+            // C
+            if (markECTS >= 74 && markECTS <= 81)
+            {
+                markECTSletter = "C";
+            }
+            // D
+            if (markECTS >= 64 && markECTS <= 73)
+            {
+                markECTSletter = "D";
+            }
+            // E
+            if (markECTS >= 60 && markECTS <= 63)
+            {
+                markECTSletter = "E";
+            }
+            // F
+            if (markECTS >= 35 && markECTS <= 59)
+            {
+                markECTSletter = "F";
+            }
+            // Fx
+            if (markECTS <= 34)
+            {
+                markECTSletter = "Fx";
+            }            
+
+            return (mark, markNational, (markECTS, markECTSletter));
         }
 
         /// <summary>
