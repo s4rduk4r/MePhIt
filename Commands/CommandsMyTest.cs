@@ -300,18 +300,30 @@ namespace MePhIt.Commands
                 }
 
                 // 9. Form the marks earned for the teacher
-                var msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestFinished);
+                var msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestFinished) + "\n";
                 var msgMarkFmt = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestMark);
+                var resultMsgs = new List<DiscordMessage>();
                 foreach (var ri in resultsInfo)
                 {
                     var resultInfo = await ri;
                     var studentResult = studentsResults[resultInfo.Student];
                     var accuracy = studentResult.Score / studentResult.TestState.Value;
                     var mark = GetMarks(srvr, accuracy);
-                    msg += $"\n{resultInfo.Student.Mention}";
+                    msg += $"{resultInfo.Student.Mention}";
                     msg += string.Format(msgMarkFmt, mark.Mark, resultInfo.ResultMsg.JumpLink) + "\n";
+                    resultMsgs.Add(resultInfo.ResultMsg);
                 }
-                timer.CommandsMyTest.Settings[srvr].Channel.SendMessageAsync(msg);
+                var dmsg = await timer.CommandsMyTest.Settings[srvr].Channel.SendMessageAsync(msg);
+                // Add reverse jump link
+                msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestResultsLink);
+                msg += dmsg.JumpLink;
+                foreach(var resultMsg in resultMsgs)
+                {
+                    resultMsg.ModifyAsync($"{resultMsg.Content}\n\n{msg}");
+                }
+
+                // Release timer
+                timer.Close();
             }
         }
 
