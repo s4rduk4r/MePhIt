@@ -649,8 +649,10 @@ namespace MePhIt.Commands
                 timer.Stop();
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
             }
-            
-            commandContext.Message.CreateReactionAsync(Bot.ReactFail);
+            else
+            {
+                commandContext.Message.CreateReactionAsync(Bot.ReactFail);
+            }
         }
 
         [Command("clear")]
