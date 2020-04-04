@@ -3,17 +3,22 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Copyright>Andrey Glushenkov</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/s4rduk4r/MePhit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/s4rduk4r/MePhit</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="mytest\tests\Информатика и компьютерная техника 2019-2020\**" />
-    <EmbeddedResource Remove="mytest\tests\Информатика и компьютерная техника 2019-2020\**" />
-    <None Remove="mytest\tests\Информатика и компьютерная техника 2019-2020\**" />
+    <None Include="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00675" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00675" />
+    <PackageReference Include="DSharpPlus" Version="4.0.0-nightly-00678" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.0-nightly-00678" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
@@ -28,6 +33,9 @@
     <None Update="localization\ru_ru.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="mytest\tests\DebugTest.mtc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="mytest\tests\TestExample.mytest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -35,5 +43,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties localization_4en_3us_1json__JsonSchema="B" /></VisualStudio></ProjectExtensions>
 
 </Project>
