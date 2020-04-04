@@ -15,7 +15,8 @@ namespace MePhIt.Commands
     [Aliases("занятие")]
     public class CommandsClassTime : BaseCommandModule
     {
-        public IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new ConcurrentDictionary<DiscordGuild, ClassTimeSettings>();
+        private IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new ConcurrentDictionary<DiscordGuild, ClassTimeSettings>();
+        private MePhItLocalization Localization = MePhItBot.Bot.Settings.Localization;
 
         [Command("ru")]
         [Aliases("ru_RU", "russian", "ру", "русский")]
@@ -155,6 +156,8 @@ namespace MePhIt.Commands
         [RequirePermissions(Permissions.Administrator)]
         public async Task List(CommandContext commandContext, DiscordChannel channel = null)
         {
+            channel = channel == null ? commandContext.Channel : channel;
+
             MePhItLocalization localization = null;
             ClassTimeSettings localSettings = null;
             try
@@ -164,31 +167,23 @@ namespace MePhIt.Commands
             }
             catch(Exception e)
             {
-                commandContext.Message.CreateReactionAsync(DiscordEmoji.FromName(commandContext.Client, ":exclamation:"));
+                LocalSettings[commandContext.Guild] = new ClassTimeSettings(LocalSettings, channel);
+                commandContext.Message.CreateReactionAsync(DiscordEmoji.FromName(commandContext.Client, MePhItUtilities.EmojiWarning));
             }
 
-            channel = channel == null ? commandContext.Channel : channel;
-            var members = commandContext.Guild.Members;
-            var membersList = "";
-            foreach(var m in members)
+            var students = await MePhItUtilities.GetStudentsAsync(commandContext.Guild);
+            var memberList = "";
+            var strAbsense = Localization.Message(commandContext.Guild, MessageID.ListAbsent);
+            foreach(var student in students)
             {
-                var member = m.Value;
-                if(!member.IsBot)
-                {
-                    if (member.Presence != null && member.Presence.Status != UserStatus.Offline)
-                    {
-                        membersList += $"{member.Mention}\n";
-                    }
-                    else
-                    {
-                        membersList += string.Format(localization.Message(localSettings.Language, MessageID.ListAbsent), member.Mention);
-                    }
-                }
+                memberList += student.IsOnline ? student.User.Mention : string.Format(strAbsense, student.User.Mention);
+                memberList += "\n";
             }
+
             commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
 
-            await channel.SendMessageAsync(localization.Message(localSettings.Language, MessageID.ListHeader));
-            channel.SendMessageAsync(membersList);
+            await channel.SendMessageAsync(Localization.Message(commandContext.Guild, MessageID.ListHeader));
+            channel.SendMessageAsync(memberList);
         }
 
     }
