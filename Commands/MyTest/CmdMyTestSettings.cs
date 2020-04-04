@@ -14,6 +14,11 @@ namespace MePhIt.Commands.MyTest
     public class CmdMyTestSettings
     {
         /// <summary>
+        /// Discord channel where to send MyTest state messages
+        /// </summary>
+        public DiscordChannel Channel { get; set; }
+
+        /// <summary>
         /// Test state for each student
         /// </summary>
         public IDictionary<DiscordMember, TestState> TestState { get; set; } = new ConcurrentDictionary<DiscordMember, TestState>();

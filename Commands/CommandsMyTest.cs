@@ -124,7 +124,14 @@ namespace MePhIt.Commands
                 test.LoadTest(filePath);
                 if(!TestLoaded.TryAdd(commandContext.Guild, test))
                 {
-                    throw new FileLoadException($"Unable to load test from {filePath}");
+                    if (TestLoaded.ContainsKey(commandContext.Guild))
+                    {
+                        TestLoaded[commandContext.Guild] = test;
+                    }
+                    else
+                    {
+                        throw new FileLoadException($"Unable to load test from {filePath}");
+                    }
                 }
 
                 Settings.TryAdd(commandContext.Guild, new CmdMyTestSettings());
@@ -148,7 +155,17 @@ namespace MePhIt.Commands
             channelInfoMessages = channelInfoMessages == null ? commandContext.Channel : channelInfoMessages;
 
             // 1. Get loaded test
-            TestState test = TestLoaded[commandContext.Guild]; ;
+            TestState test;
+            try
+            {
+                test = TestLoaded[commandContext.Guild]; ;
+            }
+            catch
+            {
+                await commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
+                return;
+            }
+            
             CmdMyTestSettings settings;
 
             if(!Settings.TryGetValue(commandContext.Guild, out settings) || settings.TestState == null)
@@ -157,8 +174,16 @@ namespace MePhIt.Commands
                 return;
             }
 
+            settings.Channel = channelInfoMessages;
+
             // 2. Get a list of students online
             var students = await GetStudentsOnlineAsync(commandContext.Guild);
+            if(students.Count() == 0)
+            {
+                commandContext.Message.CreateReactionAsync(BotSettings.EmojiReactFail);
+                return;
+            }
+
             foreach(var student in students)
             {
                 Settings[commandContext.Guild].TestState[student as DiscordMember] = test.Clone() as TestState;
@@ -263,26 +288,34 @@ namespace MePhIt.Commands
 
                 var testResults = await CollectAnswersAsync(settings, students);
 
-
                 // 8. Present the question-answer statistics to the students
-                var msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestFinished);
-                var msgQuestionStrFormat = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestQuestionResult);
-                var msgTestResultsStrFormat = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestTotalResults);
-
-                foreach(var student in students)
+                var resultsInfo = new List<Task<(DiscordMember Student, DiscordMessage ResultMsg)>>();
+                var studentsResults = new Dictionary<DiscordMember, TestResults>();
+                foreach (var student in students)
                 {
                     var studentResult = testResults.First(sr => sr.Student == student).Results;
                     var messages = settings.TempTestChannelQuestions[student];
-
-                    SendTestResultStatisticsAsync(settings.TempTestChannelGrp[student], messages, studentResult);
+                    resultsInfo.Add(SendTestResultStatisticsAsync(student, settings.TempTestChannelGrp[student], messages, studentResult));
+                    studentsResults[student] = studentResult;
                 }
 
-                // 9. Present the question-answer statistics to the teacher
-
-                // 10. Form the marks earned
-                
+                // 9. Form the marks earned for the teacher
+                var msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestStartTestFinished);
+                var msgMarkFmt = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestMark);
+                foreach (var ri in resultsInfo)
+                {
+                    var resultInfo = await ri;
+                    var studentResult = studentsResults[resultInfo.Student];
+                    var accuracy = studentResult.Score / studentResult.TestState.Value;
+                    var mark = GetMarks(srvr, accuracy);
+                    msg += $"\n{resultInfo.Student.Mention}";
+                    msg += string.Format(msgMarkFmt, mark.Mark, resultInfo.ResultMsg.JumpLink) + "\n";
+                }
+                timer.CommandsMyTest.Settings[srvr].Channel.SendMessageAsync(msg);
             }
         }
+
+
 
         /// <summary>
         /// Send test results to the student
@@ -291,7 +324,7 @@ namespace MePhIt.Commands
         /// <param name="messages">Messages with questions</param>
         /// <param name="studentResults">Results of the student</param>
         /// <returns></returns>
-        private async Task SendTestResultStatisticsAsync(DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
+        private async Task<(DiscordMember Student, DiscordMessage ResultMsg)> SendTestResultStatisticsAsync(DiscordMember student, DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
         {
             // ---- HEADER ----
             var msg = $"{Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestFinished)}\n";
@@ -333,14 +366,16 @@ namespace MePhIt.Commands
                 dmsg.ModifyAsync($"{dmsg.Content}\n\n{linkText}");
                 System.Threading.Thread.Sleep(50);
             }
+
+            return (student, resultMsg);
         }
 
         /// <summary>
         /// Convert test results into the marks
         /// </summary>
         /// <param name="server"></param>
-        /// <param name="accuracy"></param>
-        /// <returns></returns>
+        /// <param name="accuracy">Answer accuracy = student score / test value</param>
+        /// <returns>Tuple (string Mark, string NationalMark, (int Points, string Letter) ECTS)</returns>
         (string Mark, string NationalMark, (int Points, string Letter) ECTS) GetMarks(in DiscordGuild server, in double accuracy)
         {
             /*
