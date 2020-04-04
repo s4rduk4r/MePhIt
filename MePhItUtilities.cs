@@ -230,6 +230,15 @@ namespace MePhIt
             return studentsOnline;
         }
 
+        /// <summary>
+        /// Check if student is online
+        /// </summary>
+        /// <param name="student"></param>
+        /// <returns></returns>
+        public static bool IsOnline(DiscordMember student)
+        {
+            return (student.Presence != null && student.Presence.Status != UserStatus.Offline);
+        }
 
         // ------------ EMOJI ------------
 
