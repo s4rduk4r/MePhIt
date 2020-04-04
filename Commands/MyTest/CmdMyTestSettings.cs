@@ -27,6 +27,7 @@ namespace MePhIt.Commands.MyTest
         /// Test channel group
         /// </summary>
         public IDictionary<DiscordMember, DiscordChannel> TempTestChannelGrp { get; set; } = new ConcurrentDictionary<DiscordMember, DiscordChannel>();
+        public ulong TempTestChannelGrpCategoryId { get; set; } = 0;
         /// <summary>
         /// Test question messages
         /// </summary>

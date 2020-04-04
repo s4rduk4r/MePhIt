@@ -60,7 +60,7 @@ namespace MePhIt
         /// Delete temporary channels
         /// </summary>
         /// <param name="channels">Channels to delete</param>
-        public static void CreateTemproraryChannelsAsync(IEnumerable<DiscordChannel> channels)
+        public static async Task DeleteTemproraryChannelsAsync(IEnumerable<DiscordChannel> channels)
         {
             foreach (var ch in channels)
             {

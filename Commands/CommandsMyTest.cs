@@ -194,7 +194,8 @@ namespace MePhIt.Commands
             // 3.1. Create MyTest channel category
             // 3.2. Create text channels with names corresponding to student's displayed name
             // 3.3 Store created temporary channels
-            Settings[commandContext.Guild].TempTestChannelGrp = await CreateTemporaryTestChannelGroup(commandContext, students);
+            (Settings[commandContext.Guild].TempTestChannelGrpCategoryId, 
+                Settings[commandContext.Guild].TempTestChannelGrp) = await CreateTemporaryTestChannelGroup(commandContext, students);
             var tempChannels = Settings[commandContext.Guild].TempTestChannelGrp;
 
             // 3.4. Inform students to join their corresponding channels
@@ -322,12 +323,12 @@ namespace MePhIt.Commands
                     resultMsg.ModifyAsync($"{resultMsg.Content}\n\n{msg}");
                 }
 
-                // Release timer
+                // Release resources
                 timer.Close();
+                settings.TempTestChannelQuestions.Clear();
+                settings.TestState.Clear();
             }
         }
-
-
 
         /// <summary>
         /// Send test results to the student
@@ -608,7 +609,7 @@ namespace MePhIt.Commands
 
 
 
-        private async Task<IDictionary<DiscordMember, DiscordChannel>> 
+        private async Task<(ulong CategoryChannelId, IDictionary<DiscordMember, DiscordChannel> NestedChannels)> 
             CreateTemporaryTestChannelGroup(CommandContext commandContext, IEnumerable<DiscordUser> students)
         {
             var tempCategoryName = Localization.Message(commandContext.Guild, MessageID.CmdMyTestStartTempCategoryName);
@@ -628,24 +629,52 @@ namespace MePhIt.Commands
                 await tmpCh.Channel.AddOverwriteAsync(tmpCh.Member, Permissions.AccessChannels | Permissions.ReadMessageHistory, Permissions.All);
                 tempTestChannels[tmpCh.Member] = tmpCh.Channel;
             }
-            return tempTestChannels;
+            return (tempChannels.CategoryChannel.Id, tempTestChannels);
         }
 
+        /// <summary>
+        /// Stop the ongoing test
+        /// </summary>
+        /// <param name="commandContext"></param>
+        /// <returns></returns>
         [Command("stop")]
         [Aliases("стоп")]
         [Description("Прекратить тестирование")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task MyTestStop(CommandContext commandContext)
         {
-            throw new NotImplementedException();
+            var timer = Settings[commandContext.Guild].Timer;
+            if (timer != null && timer.Enabled)
+            {
+                timer.Stop();
+                commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
+            }
+            
+            commandContext.Message.CreateReactionAsync(Bot.ReactFail);
         }
 
-        [Command("results")]
-        [Aliases("результаты")]
-        [Description("Показать результаты тестирования")]
+        [Command("clear")]
+        [Aliases("убрать")]
+        [Description("Удаляет временные каналы тестирования")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task MyTestResults(CommandContext commandContext, bool brief = false)
+        public async Task MyTestClear(CommandContext commandContext)
         {
+            try
+            {
+                var settings = Settings[commandContext.Guild];
+                // Delete all student's channels
+                var tempChannelGrp = settings.TempTestChannelGrp.Values;
+                var task = DeleteTemproraryChannelsAsync(tempChannelGrp);
+                settings.TempTestChannelGrp.Clear();
+                // Delete parent category for the student's channels
+                await task;
+                commandContext.Guild.GetChannel(settings.TempTestChannelGrpCategoryId).DeleteAsync();
+            }
+            catch(Exception e)
+            {
+                commandContext.Channel.SendMessageAsync($"{EmojiCritical} {e.Message}");
+            }
+
             throw new NotImplementedException();
         }
     }
