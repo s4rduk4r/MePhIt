@@ -676,8 +676,6 @@ namespace MePhIt.Commands
             {
                 commandContext.Channel.SendMessageAsync($"{EmojiCritical} {e.Message}");
             }
-
-            throw new NotImplementedException();
         }
     }
 }
