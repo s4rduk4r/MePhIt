@@ -25,10 +25,15 @@ namespace MePhIt.Commands
         [Description("Начать занятие")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task Start(CommandContext commandContext,
+                                [Description("Канал для вывода информационных сообщений")]
                                 DiscordChannel channel = null,   // Channel to output info messages
+                                [Description("Длительность занятия в минутах")]
                                 int durationTimeInMinutes = 150, // class longivity
+                                [Description("Время до начала перерыва в минутах")]
                                 int timeTillBreakInMinutes = 60,   // time before the break begins
+                                [Description("Длительность перерыва в минутах")]
                                 int breakDurationInMinutes = 15, // break time length
+                                [Description("Время в минутах до конца занятия для уведомления об окончании занятия")]
                                 int notifyBeforeEventInMinutes = 5) // ahead notify about the break and about the class end
         {
             ClassTimeSettings localSettings = null;
@@ -98,7 +103,9 @@ namespace MePhIt.Commands
         [Aliases("список")]
         [Description("Сформировать список студентов, присутствующих на занятии. Студенты, находящиеся в оффлайне считаются пропустившими занятие")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task List(CommandContext commandContext, DiscordChannel channel = null)
+        public async Task List(CommandContext commandContext, 
+                               [Description("Канал для вывода сформированного списка студентов")]
+                               DiscordChannel channel = null)
         {
             channel = channel == null ? commandContext.Channel : channel;
 
