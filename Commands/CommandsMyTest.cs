@@ -57,7 +57,7 @@ namespace MePhIt.Commands
         [Aliases("список")]
         [Description("Показать доступные файлы тестов")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task MyTestList(CommandContext commandContext, DiscordChannel channel = null)
+        public async Task MyTestList(CommandContext commandContext, [Description("Канал вывода списка")] DiscordChannel channel = null)
         {
             channel = channel == null ? commandContext.Channel : channel;
 
@@ -108,7 +108,7 @@ namespace MePhIt.Commands
         [Aliases("файл")]
         [Description("Выбрать файл теста из установленных в системе")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task MyTestFile(CommandContext commandContext, params string[] filepath)
+        public async Task MyTestFile(CommandContext commandContext, [Description("Путь к файлу теста MyTest")] params string[] filepath)
         {
             var filePath = "";
             foreach (var str in filepath)
@@ -150,7 +150,7 @@ namespace MePhIt.Commands
         [Aliases("старт")]
         [Description("Начать тестирование")]
         [RequirePermissions(Permissions.Administrator)]
-        public async Task MyTestStart(CommandContext commandContext, DiscordChannel channelInfoMessages = null)
+        public async Task MyTestStart(CommandContext commandContext, [Description("Канал вывода сообщений")] DiscordChannel channelInfoMessages = null)
         {
             channelInfoMessages = channelInfoMessages == null ? commandContext.Channel : channelInfoMessages;
 
