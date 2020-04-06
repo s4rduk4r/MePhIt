@@ -106,7 +106,6 @@ namespace MePhIt.Commands
             foreach(var student in students)
             {
                 memberList += student.IsOnline ? student.User.Mention : string.Format(strAbsense, student.User.Mention);
-                memberList += "\n";
             }
 
             commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
