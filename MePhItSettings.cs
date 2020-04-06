@@ -80,6 +80,7 @@ namespace MePhIt
                 Token = this.token,
                 TokenType = TokenType.Bot,
                 Proxy = webProxyAddress.Length == 0 ? null : new WebProxy(webProxyAddress),
+                AutoReconnect = true,
 #if DEBUG
                 UseInternalLogHandler = true,
                 LogLevel = LogLevel.Debug
