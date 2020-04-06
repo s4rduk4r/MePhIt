@@ -22,7 +22,7 @@ namespace MePhIt.Commands
         [Command("lang")]
         [Aliases("язык")]
         [Description("Настроить язык")]
-        public async Task Language(CommandContext commandContext, string language = null)
+        public async Task Language(CommandContext commandContext, [Description("Буквенный код языка. Например: ru, en")] string language = null)
         {
             if(language == null)
             {
