@@ -13,6 +13,8 @@ namespace MePhIt.Commands
 {
     [Group("class")]
     [Aliases("занятие")]
+    [Description("Проведение занятия. Начало, перерыв, окончание, список присутствующих")]
+    [RequirePermissions(Permissions.Administrator)]
     public class CommandsClassTime : BaseCommandModule
     {
         private IDictionary<DiscordGuild, ClassTimeSettings> LocalSettings = new ConcurrentDictionary<DiscordGuild, ClassTimeSettings>();
