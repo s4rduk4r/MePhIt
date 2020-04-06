@@ -22,8 +22,12 @@ namespace MePhIt.Commands
         [Command("lang")]
         [Aliases("язык")]
         [Description("Настроить язык")]
-        public async Task Language(CommandContext commandContext, string language = "ru_RU")
+        public async Task Language(CommandContext commandContext, string language = null)
         {
+            if(language == null)
+            {
+                language = MePhItBot.Bot.Settings.Localization.GetLanguageById(MePhItBot.Bot.Settings.LanguageDefault);
+            }
             var languages = Localization.GetLanguages();
             if(languages.Contains(language))
             {
