@@ -123,6 +123,24 @@ namespace MePhIt
             return value;
         }
 
+        public string GetLanguageById(in LanguageID languageID)
+        {
+            var lang = "";
+            switch(languageID)
+            {
+                case LanguageID.ru_RU:
+                    lang = "ru";
+                    break;
+                case LanguageID.en_US:
+                    lang = "en";
+                    break;
+                default:
+                    lang = GetLanguageById(LanguageFallback);
+                    break;
+            }
+            return lang;
+        }
+
         /// <summary>
         /// Get localization string
         /// </summary>
