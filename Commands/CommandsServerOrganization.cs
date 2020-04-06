@@ -25,7 +25,11 @@ namespace MePhIt.Commands
         [Aliases("скажи")]
         [Description("say #channel Hello world!\nПоместить текст без форматирования в канал")]
         [RequirePermissions(Permissions.ManageMessages)]
-        public async Task Say(CommandContext commandContext, DiscordChannel channel = null, params string[] text)
+        public async Task Say(CommandContext commandContext,
+                              [Description("Канал вывода сообщения")]
+                              DiscordChannel channel = null,
+                              [Description("Размещаемый на канале текст")]
+                              params string[] text)
         {
             string txt = "";
             foreach(var str in text)
@@ -40,8 +44,13 @@ namespace MePhIt.Commands
 
         [Command("info")]
         [Aliases("инфо")]
+        [Description("info #channel объявление\nИнформационное сообщение")]
         [RequirePermissions(Permissions.ManageChannels)]
-        public async Task Info(CommandContext commandContext, DiscordChannel channel = null, params string[] text)
+        public async Task Info(CommandContext commandContext,
+                               [Description("Канал вывода сообщения")]
+                               DiscordChannel channel = null,
+                               [Description("Размещаемый на канале текст")]
+                               params string[] text)
         {
             string txt = ":information_source: ";
             foreach(var str in text)
@@ -55,8 +64,13 @@ namespace MePhIt.Commands
 
         [Command("warn")]
         [Aliases("пред")]
+        [Description("warn #channel объявление\nВажное сообщение")]
         [RequirePermissions(Permissions.ManageChannels)]
-        public async Task Warn(CommandContext commandContext, DiscordChannel channel = null, params string[] text)
+        public async Task Warn(CommandContext commandContext,
+                               [Description("Канал вывода сообщения")]
+                               DiscordChannel channel = null,
+                               [Description("Размещаемый на канале текст")]
+                               params string[] text)
         {
             string txt = ":warning: ";
             foreach (var str in text)
@@ -70,8 +84,13 @@ namespace MePhIt.Commands
 
         [Command("crit")]
         [Aliases("крит")]
+        [Description("crit #channel объявление\nКритически важное сообщение")]
         [RequirePermissions(Permissions.ManageChannels)]
-        public async Task Critical(CommandContext commandContext, DiscordChannel channel = null, params string[] text)
+        public async Task Critical(CommandContext commandContext,
+                                   [Description("Канал вывода сообщения")]
+                                   DiscordChannel channel = null,
+                                   [Description("Размещаемый на канале текст")]
+                                   params string[] text)
         {
             string txt = ":exclamation: ";
             foreach (var str in text)
@@ -85,9 +104,7 @@ namespace MePhIt.Commands
 
         [Command("setup")]
         [Aliases("организуй")]
-        [Description("Организация каналов на учебном сервере. Создаёт каналы #правила, #информация, категории Занятие, Управление ботом.\n" +
-            "lang:  ru - создать каналы и категории для русскоязычного сервера\n" +
-            "       en - создать каналы и категории для англоязычного сервера")]
+        [Description("Организация каналов на учебном сервере. Создаёт каналы #правила, #информация, категории Занятие, Управление ботом")]
         [RequirePermissions(Permissions.Administrator)]
         public async Task Setup(CommandContext commandContext)
         {
