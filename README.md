@@ -1,7 +1,8 @@
 # MePhIT
 MePhIT - super simple Discord bot
 ## About
-**MePhIT** (Medical Physics and Information Technology) is a discord bot for organizing students for a distance learning on a ~~guild~~ server with teacher as a server owner/administrator. The bot's usage is intended to be a part of a small server (~20 members at most) and provide basic teaching services to the teacher and the students.
+[Русская версия](./README-RU.md)
+**MePhIT** (Medical Physics and Information Technology) is a [Discord](https://discordapp.com) bot to organize the students for a distance learning on a ~~guild~~ server with a teacher as a server owner/administrator. The bot's usage is intended to be a part of a small server (~20 members at most) and provide basic teaching services to the teacher and the students.
 
 ### MePhIT features:
 1. **Server organization**
@@ -16,7 +17,7 @@ Bot has several commands to post text messages of different severity to the spec
 - Make a list of present and absent students. As of now bot considers offline and invisible members as being absent.
 Because of the bot being purposed to ease teacher's work, the majority of commands will be ignored by non-administrator channel members.
 4. **Tests**
-- Bot supports tests and relies on the **MyTestLib**
+- Bot supports tests and relies on the [**MyTestLib**](https://github.com/s4rduk4r/MyTestLib)
 5. **Multiple languages**
 - Bot supports multiple languages. As of now it has *english* and *russian* localization strings. New languages can be added.
 6. **Multiple servers**
