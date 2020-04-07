@@ -1,5 +1,5 @@
 # MePhIT ![.NET Core](https://github.com/s4rduk4r/MePhit/workflows/.NET%20Core/badge.svg?branch=master&event=push)
-MePhIT - super simple Discord bot
+MePhIT - Discord бот для облегчения дистанционного образования
 ## About [English version](./README.md)
 **MePhIT** (Medical Physics and Information Technology) это бот для [Discord](https://discordapp.com) для организации проведения занятий в режиме дистанционного обучения на отдельном дискорд-сервере.
 Подразумевается, что бот должен использоваться на небольшом сервере (~20 человек) и должен обеспечивать базовый функционал для преподавателя и студентов.
