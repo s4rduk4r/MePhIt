@@ -306,7 +306,7 @@ namespace MePhIt.Commands
                 var resultMsgs = new List<DiscordMessage>();
                 foreach (var ri in resultsInfo)
                 {
-                    var resultInfo = await ri;  // BUG: ri == null
+                    var resultInfo = await ri;
                     var studentResult = studentsResults[resultInfo.Student];
                     var accuracy = studentResult.Score / studentResult.TestState.Value;
                     var mark = GetMarks(srvr, accuracy);
