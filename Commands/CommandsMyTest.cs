@@ -269,7 +269,7 @@ namespace MePhIt.Commands
             var timer = sender as MyTestTimer;
             if(!timer.TestStarted)
             {// Pre-test event
-                // Start pre-test timer
+                // Start test timer
                 timer.StartTest();
                 // 6. Throw all of the questions at student's channels
                 // Remember message IDs to read student's answers from them
@@ -339,10 +339,14 @@ namespace MePhIt.Commands
         /// <returns></returns>
         private async Task<(DiscordMember Student, DiscordMessage ResultMsg)> SendTestResultStatisticsAsync(DiscordMember student, DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
         {
+            // Discord message length limit
+            const int DISCORD_MSG_MAX_CHARACTERS = 1800;
             // ---- HEADER ----
             var msg = $"{Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestFinished)}\n";
+            var msgList = new List<string>();
 
             // ---- QUESTIONS ----
+            DiscordMessage resultMsg = null;
             var questions = studentResults.TestState.Questions;
             foreach (var question in questions)
             {
@@ -358,6 +362,11 @@ namespace MePhIt.Commands
                         var accuracy = studentResults.QuestionScore(question) / question.Value;
                         accuracy = accuracy > 0 ? accuracy : 0;
                         msg += string.Format(strQuestionFormat, questionNumber, uri, accuracy, score);
+                        if(msg.Length >= DISCORD_MSG_MAX_CHARACTERS)
+                        {
+                            msgList.Add(msg);
+                            msg = "";
+                        }
                     }
                 }
             }
@@ -368,8 +377,21 @@ namespace MePhIt.Commands
             var mark = GetMarks(studentChannel.Guild, totalAccuracy);
             var markECTS = $"{mark.ECTS.Points} {mark.ECTS.Letter}";
             msg += string.Format(strSummaryFormat, totalAccuracy, studentResults.Score, studentResults.TestState.Value, mark.Mark, mark.NationalMark, markECTS) ;
+            if (msg.Length >= DISCORD_MSG_MAX_CHARACTERS)
+            {
+                msgList.Add(msg);
+                msg = "";
+            }
 
-            var resultMsg = await studentChannel.SendMessageAsync(msg);
+            foreach (var m in msgList)
+            {
+                if(m == msgList[0])
+                {
+                    resultMsg = await studentChannel.SendMessageAsync(m);
+                }
+            }
+
+            resultMsg = await studentChannel.SendMessageAsync(msg);
             // Add jump links to the results message
             foreach(var message in messages)
             {
