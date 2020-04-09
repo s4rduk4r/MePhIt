@@ -1,0 +1,31 @@
+﻿# Отладочный тест
+Test = Отладочный (russian)
+# Test author
+Author = Andrey N. Glushenkov
+# Creation/Modification date. Must be in format DD.MM.YYYY
+Date = 02.04.2020
+# 3 minutes
+Time = 90
+Mode = Punish
+# ----- ВОПРОСЫ -----
+Question = Сколько будет 2 + 2?
+Value = 100
+Answer+ = 4
+Answer = 3
+Answer = 5
+Answer = -1
+Answer = 0
+Question = К математическим объектам относят:
+Value = 100
+Answer+ = Кольца
+Answer+ = Линейные пространства
+Answer+ = Матрицы
+Answer+ = Векторы
+Answer = Строки
+Answer = Цвет
+Question = Известные учёные XX столетия:
+Value = 100
+Answer+ = В.А. Фок
+Answer+ = М.Планк
+Answer = Д.К. Максвелл
+Answer = И. Ньютон
