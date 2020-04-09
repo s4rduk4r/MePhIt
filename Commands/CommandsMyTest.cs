@@ -227,7 +227,11 @@ namespace MePhIt.Commands
             // 4. Register callback for test start/stop event
             try
             {
+#if !DEBUG
                 var mtTimer = new MyTestTimer(this, new TimeSpan(0, timeoutBeforeTestMinutes, 0).TotalMilliseconds);
+#elif DEBUG
+                var mtTimer = new MyTestTimer(this, new TimeSpan(0, 0, timeoutBeforeTestMinutes).TotalMilliseconds);
+#endif
                 Settings[commandContext.Guild].Timer = mtTimer;
                 mtTimer.Elapsed += Timer_Elapsed;
                 mtTimer.Start();
@@ -269,11 +273,12 @@ namespace MePhIt.Commands
             var timer = sender as MyTestTimer;
             if(!timer.TestStarted)
             {// Pre-test event
-                // Start test timer
-                timer.StartTest();
                 // 6. Throw all of the questions at student's channels
                 // Remember message IDs to read student's answers from them
-                timer.CommandsMyTest.SendTestQuestionsAsync(timer.CommandsMyTest.GetServer(timer));
+                timer.Stop();
+                await timer.CommandsMyTest.SendTestQuestionsAsync(timer.CommandsMyTest.GetServer(timer));
+                // Start test timer
+                timer.StartTest();
             }
             else
             {// Post-test event
@@ -551,6 +556,10 @@ namespace MePhIt.Commands
                         int i = EmojiToNumber(Bot.Settings.Discord, r.Emoji.Name);
                         var answer = data.Question.Answers.ElementAt(i - 1);
                         answers.Add(answer);
+                    }
+                    else
+                    {
+                        message.DeleteReactionAsync(r.Emoji, BotSettings.Discord.CurrentUser);
                     }
                 }
                 // END ---- Convert reactions to answers ----
