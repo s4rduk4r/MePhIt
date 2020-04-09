@@ -283,7 +283,7 @@ namespace MePhIt
                     emoji = ":nine:";
                     break;
                 case 10:
-                    emoji = ":keycap_ten: ";
+                    emoji = ":keycap_ten:";
                     break;
                 default:
                     break;
