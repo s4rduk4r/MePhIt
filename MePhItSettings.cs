@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Net;
 using DSharpPlus;
@@ -20,6 +21,11 @@ namespace MePhIt
         /// Localization strings
         /// </summary>
         public MePhItLocalization Localization = MePhItLocalization.Localization;
+
+        /// <summary>
+        /// Time zone
+        /// </summary>
+        public IDictionary<DiscordGuild, TimeZoneInfo> TimeZone = new ConcurrentDictionary<DiscordGuild, TimeZoneInfo>();
 
         /// <summary>
         /// Path to MyTest test files folder
