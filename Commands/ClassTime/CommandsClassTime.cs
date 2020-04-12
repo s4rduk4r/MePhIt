@@ -114,7 +114,7 @@ namespace MePhIt.Commands
             var strAbsense = Localization.Message(commandContext.Guild, MessageID.ListAbsent);
             foreach(var student in students)
             {
-                memberList += student.IsOnline ? student.User.Mention : string.Format(strAbsense, student.User.Mention);
+                memberList += student.IsOnline ? $"{student.User.Mention}\n" : string.Format(strAbsense, student.User.Mention);
             }
 
             commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactSuccess);
