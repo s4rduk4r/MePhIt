@@ -54,6 +54,7 @@ namespace MePhIt
 
             // Add commands here
             commands.RegisterCommands<CommandsServerOrganization>();
+            commands.RegisterCommands<Commands.ServerOrganization.CmdGrpSetup>();
             commands.RegisterCommands<CommandsModeration>();
             commands.RegisterCommands<CommandsMyTest>();
             commands.RegisterCommands<CommandsClassTime>();
