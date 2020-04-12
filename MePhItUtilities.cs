@@ -13,6 +13,30 @@ namespace MePhIt
     /// </summary>
     internal static class MePhItUtilities
     {
+        public static int DISCORD_MESSAGE_SIZE_LIMIT = 2000;
+
+        // ------------ MESSAGE MANAGEMENT ------------
+        public static async Task SendBigMessage(DiscordChannel channel, string msg)
+        {
+            if (msg.Length > DISCORD_MESSAGE_SIZE_LIMIT)
+            {
+                var msgToSend = "";
+                foreach (var m in msg.Split("\n"))
+                {
+                    msgToSend += $"{m}\n";
+                    if (msgToSend.Length > 0.9 * DISCORD_MESSAGE_SIZE_LIMIT)
+                    {
+                        channel.SendMessageAsync(msgToSend);
+                        msgToSend = "";
+                    }
+                }
+            }
+            else
+            {
+                channel.SendMessageAsync(msg);
+            }
+        }
+
         // ------------ CHANNEL MANAGEMENT ------------
         /// <summary>
         /// Create temporary channels for specific server members
