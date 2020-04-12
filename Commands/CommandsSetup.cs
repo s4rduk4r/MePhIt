@@ -38,6 +38,52 @@ namespace MePhIt.Commands
             commandContext.Message.CreateReactionAsync(Bot.ReactFail);
         }
 
+        [Command("timezone")]
+        [
+            Aliases("tz", 
+                    "время",
+                    "вз")
+        ]
+        [Description("Настройка временной зоны")]
+        public async Task TimeZone(CommandContext commandContext, [Description("")] params string[] timeZoneId)
+        {
+            if(timeZoneId.Length == 0)
+            {
+                var msg = $"{MePhItUtilities.EmojiInfo} **Available Timezones:**\n";
+                foreach(var tz in TimeZoneInfo.GetSystemTimeZones())
+                {
+                    msg += string.Format("{0}\n", tz.DisplayName);
+                }
+                MePhItUtilities.SendBigMessage(commandContext.Channel, msg);
+                commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
+                return;
+            }
+
+            var tzId = "";
+            for(int i = 0; i < timeZoneId.Length; i++)
+            {
+                tzId += timeZoneId[i] + (i < timeZoneId.Length - 1 ? " " : "");
+            }
+
+            try
+            {
+                foreach (var tz in TimeZoneInfo.GetSystemTimeZones())
+                {
+                    if (tz.DisplayName == tzId)
+                    {
+                        Settings.TimeZone[commandContext.Guild] = tz;
+                    }
+                }
+
+                commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
+            }
+            catch(Exception e)
+            {
+                commandContext.Message.RespondAsync($"{MePhItUtilities.EmojiCritical} {e.Message}\n{e.StackTrace}");
+                commandContext.Message.CreateReactionAsync(Bot.ReactFail);
+            }
+        }
+
         /// <summary>
         /// Enable Sync MyTest directory with remote cloud
         /// </summary>
