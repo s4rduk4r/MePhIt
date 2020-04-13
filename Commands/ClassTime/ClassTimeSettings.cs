@@ -11,6 +11,7 @@ namespace MePhIt.Commands.ClassTime
     {
         public LanguageID Language { get; set; }
         public MePhItLocalization Localization { get; private set; } = MePhItLocalization.Localization;
+        public TimeZoneInfo ServerTimeZone { get; private set; } = TimeZoneInfo.Utc;
         public int ClassTimeInMinutes { get; set; }
         public int TimeTillBreakInMinutes { get; set; }
         public int BreakDurationInMinutes { get; set; }
@@ -23,7 +24,7 @@ namespace MePhIt.Commands.ClassTime
             CalculateSchedule();
             timer.Start();
             timer.AutoReset = true;
-            var timestamp = DateTime.Now;
+            var timestamp = TimeZoneInfo.ConvertTime(DateTime.Now, ServerTimeZone);
             classStartedSeconds = timestamp.Second;
             var msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassStarted), timestamp)}";
             channel.SendMessageAsync(msg);
@@ -38,9 +39,6 @@ namespace MePhIt.Commands.ClassTime
 
         public void Break()
         {
-            //var breakEndsAt = DateTime.Now + new TimeSpan(0, BreakDurationInMinutes, 0);
-            //var msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.BreakStarted), BreakDurationInMinutes, breakEndsAt, DateTime.Now)}";
-            //channel.SendMessageAsync(msg);
             AdjustSchedule();
         }
 
@@ -65,7 +63,16 @@ namespace MePhIt.Commands.ClassTime
             BreakDurationInMinutes = breakDurationInMin;
             NotifyBeforeClassEndInMinutes = notifyBeforeClassEndInMin;
             timer.Elapsed += Timer_Elapsed;
-            Language = Localization.Language[channel.Guild];
+            try
+            {
+                Language = Localization.Language[channel.Guild];
+                ServerTimeZone = MePhItBot.Bot.Settings.TimeZone[channel.Guild];
+            }
+            catch(Exception e)
+            {
+                channel.SendMessageAsync($"{MePhItUtilities.EmojiCritical}{e.Message}\n{e.StackTrace}");
+                throw e;
+            }
         }
 
         public ClassTimeSettings(in IDictionary<DiscordGuild, ClassTimeSettings> localSettingsHolder, in DiscordChannel channel)
@@ -157,28 +164,30 @@ namespace MePhIt.Commands.ClassTime
             ClassTimeEventType eventType = ClassTimeEventType.None;
             if(schedule.TryGetValue(timePassedInMin, out eventType))
             {
+                var timeNow = TimeZoneInfo.ConvertTime(DateTime.Now, ServerTimeZone);
                 switch (eventType)
                 {
                     case ClassTimeEventType.BreakStart:
                         var breakEndsAt = DateTime.Now + new TimeSpan(0, BreakDurationInMinutes, 0);
-                        var msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.BreakStarted), BreakDurationInMinutes, breakEndsAt, DateTime.Now)}";
+                        breakEndsAt = TimeZoneInfo.ConvertTime(breakEndsAt, ServerTimeZone);
+                        var msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.BreakStarted), BreakDurationInMinutes, breakEndsAt, timeNow)}";
                         channel.SendMessageAsync(msg);
                         break;
                     case ClassTimeEventType.BreakEnd:
-                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.BreakEnded), DateTime.Now)}";
+                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.BreakEnded), timeNow)}";
                         channel.SendMessageAsync(msg);
                         break;
                     case ClassTimeEventType.NotifyClassEnding:
-                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassEndingNotify), NotifyBeforeClassEndInMinutes, DateTime.Now)} ";
+                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassEndingNotify), NotifyBeforeClassEndInMinutes, timeNow)} ";
                         channel.SendMessageAsync(msg);
                         break;
                     case ClassTimeEventType.ClassEnd:
-                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassEnded), DateTime.Now)}";
+                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassEnded), timeNow)}";
                         channel.SendMessageAsync(msg);
                         Stop();
                         break;
                     case ClassTimeEventType.ClassStart:
-                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassStarted), DateTime.Now)} ";
+                        msg = $"{channel.Guild.EveryoneRole.Mention} {string.Format(Localization.Message(Language, MessageID.ClassStarted), timeNow)} ";
                         channel.SendMessageAsync(msg);
                         break;
                     default:
