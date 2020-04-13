@@ -26,7 +26,7 @@ namespace MePhIt
                     msgToSend += $"{m}\n";
                     if (msgToSend.Length > 0.9 * DISCORD_MESSAGE_SIZE_LIMIT)
                     {
-                        channel.SendMessageAsync(msgToSend);
+                        await channel.SendMessageAsync(msgToSend);
                         msgToSend = "";
                     }
                 }
