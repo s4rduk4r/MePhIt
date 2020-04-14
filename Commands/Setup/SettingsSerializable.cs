@@ -8,10 +8,9 @@ namespace MePhIt.Commands.Setup
     [Serializable]
     public class SettingsSerializable
     {
+        public ulong ServerId;
         public string Language;
         public string TimezoneId;
-        [NonSerialized]
-        public ulong ServerId;
 
         public void Initialize(in ulong serverId, in LanguageID languageId, in TimeZoneInfo timezone)
         {
