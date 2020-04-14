@@ -35,7 +35,7 @@ namespace MePhIt
                     else
                     {
                         dmsg = await channel.SendMessageAsync(msgToSend);
-                        msgToSend = "";
+                        msgToSend = line;
                     }
                 }
                 while (ss.Peek() != -1);
