@@ -160,8 +160,9 @@ namespace MePhIt.Commands
             {
                 test = TestLoaded[commandContext.Guild]; ;
             }
-            catch
+            catch(Exception e)
             {
+                commandContext.Channel.SendMessageAsync($"{e.Message}\n{e.StackTrace}");
                 await commandContext.Message.CreateReactionAsync(MePhItBot.Bot.ReactFail);
                 return;
             }
@@ -319,7 +320,8 @@ namespace MePhIt.Commands
                     msg += string.Format(msgMarkFmt, mark.Mark, resultInfo.ResultMsg.JumpLink) + "\n";
                     resultMsgs.Add(resultInfo.ResultMsg);
                 }
-                var dmsg = await timer.CommandsMyTest.Settings[srvr].Channel.SendMessageAsync(msg);
+
+                var dmsg = await SendBigMessage(timer.CommandsMyTest.Settings[srvr].Channel, msg);
                 // Add reverse jump link
                 msg = Bot.Settings.Localization.Message(srvr, MessageID.CmdMyTestResultsLink);
                 msg += dmsg.JumpLink;
@@ -344,11 +346,8 @@ namespace MePhIt.Commands
         /// <returns></returns>
         private async Task<(DiscordMember Student, DiscordMessage ResultMsg)> SendTestResultStatisticsAsync(DiscordMember student, DiscordChannel studentChannel, IList<(TestQuestion Question, ulong MessageId)> messages, TestResults studentResults)
         {
-            // Discord message length limit
-            const int DISCORD_MSG_MAX_CHARACTERS = 1800;
             // ---- HEADER ----
             var msg = $"{Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestStartTestFinished)}\n";
-            var msgList = new List<string>();
 
             // ---- QUESTIONS ----
             DiscordMessage resultMsg = null;
@@ -367,11 +366,6 @@ namespace MePhIt.Commands
                         var accuracy = studentResults.QuestionScore(question) / question.Value;
                         accuracy = accuracy > 0 ? accuracy : 0;
                         msg += string.Format(strQuestionFormat, questionNumber, uri, accuracy, score);
-                        if(msg.Length >= DISCORD_MSG_MAX_CHARACTERS)
-                        {
-                            msgList.Add(msg);
-                            msg = "";
-                        }
                     }
                 }
             }
@@ -382,21 +376,8 @@ namespace MePhIt.Commands
             var mark = GetMarks(studentChannel.Guild, totalAccuracy);
             var markECTS = $"{mark.ECTS.Points} {mark.ECTS.Letter}";
             msg += string.Format(strSummaryFormat, totalAccuracy, studentResults.Score, studentResults.TestState.Value, mark.Mark, mark.NationalMark, markECTS) ;
-            if (msg.Length >= DISCORD_MSG_MAX_CHARACTERS)
-            {
-                msgList.Add(msg);
-                msg = "";
-            }
+            resultMsg = await SendBigMessage(studentChannel, msg);
 
-            foreach (var m in msgList)
-            {
-                if(m == msgList[0])
-                {
-                    resultMsg = await studentChannel.SendMessageAsync(m);
-                }
-            }
-
-            resultMsg = await studentChannel.SendMessageAsync(msg);
             // Add jump links to the results message
             foreach(var message in messages)
             {
