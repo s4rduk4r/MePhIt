@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
@@ -32,6 +33,16 @@ namespace MePhIt.Commands
             if(languages.Contains(language))
             {
                 Localization.Language[commandContext.Guild] = Localization.GetLanguageId(language);
+                
+                try
+                {
+                    SaveToSettingsFile(commandContext.Guild);
+                }
+                catch (Exception e)
+                {
+                    commandContext.Channel.SendMessageAsync($"{MePhItUtilities.EmojiError} {e.Message}\n{e.StackTrace}");
+                }
+
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
                 return;
             }
@@ -45,7 +56,7 @@ namespace MePhIt.Commands
                     "вз")
         ]
         [Description("Настройка временной зоны")]
-        public async Task TimeZone(CommandContext commandContext, [Description("")] params string[] timeZoneId)
+        public async Task TimeZone(CommandContext commandContext, [Description("Часовой пояс")] params string[] timeZoneId)
         {
             if(timeZoneId.Length == 0)
             {
@@ -75,6 +86,15 @@ namespace MePhIt.Commands
                     }
                 }
 
+                try
+                {
+                    SaveToSettingsFile(commandContext.Guild);
+                }
+                catch(Exception e)
+                {
+                    commandContext.Channel.SendMessageAsync($"{MePhItUtilities.EmojiError} {e.Message}\n{e.StackTrace}");
+                }
+
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
             }
             catch(Exception e)
@@ -82,6 +102,31 @@ namespace MePhIt.Commands
                 commandContext.Message.RespondAsync($"{MePhItUtilities.EmojiCritical} {e.Message}\n{e.StackTrace}");
                 commandContext.Message.CreateReactionAsync(Bot.ReactFail);
             }
+        }
+
+        private void SaveToSettingsFile(DiscordGuild server)
+        {
+            LanguageID lang;
+            TimeZoneInfo timezone;
+            try
+            {
+                lang = Localization.Language[server];
+            }
+            catch
+            {
+                lang = Settings.LanguageDefault;
+            }
+            try
+            {
+                timezone = Settings.TimeZone[server];
+            }
+            catch
+            {
+                timezone = TimeZoneInfo.Utc;
+            }
+            var settings = new Setup.SettingsSerializable();
+            settings.Initialize(server.Id, lang, timezone);
+            Setup.SettingsSerializable.Serialize(settings);
         }
 
         /// <summary>

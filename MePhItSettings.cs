@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Text;
@@ -31,6 +32,11 @@ namespace MePhIt
         /// Path to MyTest test files folder
         /// </summary>
         public string MyTestFolder { get; private set; }
+
+        /// <summary>
+        /// Path to server settings files
+        /// </summary>
+        public string ServerSettingsFolder { get; private set; }
 
         /// <summary>
         /// Default server language
@@ -95,10 +101,14 @@ namespace MePhIt
             );
             LoadEmojis(emojiReactSuccess, emojiReactFail, emojiNumbers);
 
-            SetServerLocalizations();
+            Discord.GuildAvailable += (DSharpPlus.EventArgs.GuildCreateEventArgs args) =>
+            {
+                return LoadServerSettingsAsync(args.Guild);
+            };
 
             return commandPrefixes;
         }
+
 
         /// <summary>
         /// Parse settings.json file
@@ -157,6 +167,10 @@ namespace MePhIt
                                 MyTestFolder = jsonReader.Value as string;
                                 // Convert into OS-valid filepath
                                 MyTestFolder = Path.Combine(MyTestFolder.Split(Path.AltDirectorySeparatorChar));
+                                break;
+                            case "server_settings_folder":
+                                ServerSettingsFolder = jsonReader.Value as string;
+                                ServerSettingsFolder = Path.Combine(ServerSettingsFolder.Split(Path.AltDirectorySeparatorChar));
                                 break;
                             case "localization_folder":
                                 langFolder = (jsonReader.Value as string);
@@ -228,11 +242,24 @@ namespace MePhIt
         /// <summary>
         /// Set server-specific localization settings
         /// </summary>
-        private void SetServerLocalizations()
+        private async Task LoadServerSettingsAsync(DiscordGuild server)
         {
-            foreach (var guild in Discord.Guilds.Values)
+            if(!Directory.Exists(ServerSettingsFolder))
             {
-                Localization.Language[guild] = Settings.LanguageDefault;
+                Directory.CreateDirectory(ServerSettingsFolder);
+            }
+
+            Commands.Setup.SettingsSerializable settings = null;
+            try
+            {
+                settings = Commands.Setup.SettingsSerializable.Deserialize(server.Id);
+                Localization.Language[server] = Localization.GetLanguageId(settings.Language);
+                TimeZone[server] = TimeZoneInfo.FindSystemTimeZoneById(settings.TimezoneId);
+            }
+            catch
+            {
+                Localization.Language[server] = Settings.LanguageDefault;
+                TimeZone[server] = TimeZoneInfo.Utc;
             }
         }
 
