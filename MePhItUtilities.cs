@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
@@ -16,24 +17,39 @@ namespace MePhIt
         public static int DISCORD_MESSAGE_SIZE_LIMIT = 2000;
 
         // ------------ MESSAGE MANAGEMENT ------------
-        public static async Task SendBigMessage(DiscordChannel channel, string msg)
+        public static async Task<DiscordMessage> SendBigMessage(DiscordChannel channel, string msg)
         {
             if (msg.Length > DISCORD_MESSAGE_SIZE_LIMIT)
             {
+                DiscordMessage dmsg = null;
+                var ss = new StringReader(msg);
                 var msgToSend = "";
-                foreach (var m in msg.Split("\n"))
+                do
                 {
-                    msgToSend += $"{m}\n";
-                    if (msgToSend.Length > 0.9 * DISCORD_MESSAGE_SIZE_LIMIT)
+                    // Cut and send everything under the character limit
+                    var line = ss.ReadLine() + "\n";
+                    if (msgToSend.Length + line.Length < DISCORD_MESSAGE_SIZE_LIMIT)
                     {
-                        await channel.SendMessageAsync(msgToSend);
+                        msgToSend += line;
+                    }
+                    else
+                    {
+                        dmsg = await channel.SendMessageAsync(msgToSend);
                         msgToSend = "";
                     }
                 }
+                while (ss.Peek() != -1);
+
+                // Send the last part of a message
+                if(msgToSend.Length > 0)
+                {
+                    dmsg = await channel.SendMessageAsync(msgToSend);
+                }
+                return dmsg;
             }
             else
             {
-                channel.SendMessageAsync(msg);
+                return await channel.SendMessageAsync(msg);
             }
         }
 
