@@ -17,6 +17,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.CommandsNext;
 using MePhIt.Commands;
+using System.Linq;
 
 namespace MePhIt
 {
@@ -64,8 +65,32 @@ namespace MePhIt
         static async Task Main(string[] args)
         {
             Bot = new MePhItBot();
-            Bot.Start();
-            await Task.Delay(-1);
+            while(true)
+            {
+                try
+                {
+                    if (Bot.Crash || Bot.FirstStart)
+                    {
+                        Bot.Start();
+                        Bot.Crash = false;
+                        Bot.FirstStart = false;
+
+                        await Task.Delay(-1);
+                    }
+                }
+                catch (Exception e)
+                {
+                    var timestamp = DateTime.Now;
+                    var filename = $"crash-{timestamp.Year}.{timestamp.Month}.{timestamp.Day}-{timestamp.Hour}.{timestamp.Minute}.{timestamp.Second}.log";
+                    var sw = new StreamWriter(new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None));
+                    sw.WriteLine($"CRASH:\n{e.Message}\n{e.StackTrace}");
+                    sw.Close();
+                    Bot.Crash = true;
+                }
+            }
         }
+
+        public bool Crash = false;
+        public bool FirstStart = true;
     }
 }
