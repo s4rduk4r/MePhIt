@@ -28,7 +28,7 @@ namespace MePhIt
         // Bot reacts to commands
         public DiscordEmoji ReactSuccess { get { return Settings.EmojiReactSuccess; } }
         public DiscordEmoji ReactFail { get { return Settings.EmojiReactFail; } }
-        public IList<DiscordEmoji> Numbers { get; private set; }
+        //public IList<DiscordEmoji> Numbers { get; private set; }
 
         private CommandsNextExtension commands;
 
