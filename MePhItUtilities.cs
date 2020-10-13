@@ -236,7 +236,7 @@ namespace MePhIt
         {
             var students = new List<(DiscordUser, bool)>();
             var roleStudent = GetRoleStudent(server);
-            var users = await server.GetAllMembersAsync();
+            var users = server.Members.Values;
             foreach (var user in users)
             {
                 if (user.IsBot) continue;

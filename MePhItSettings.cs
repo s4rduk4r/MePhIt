@@ -102,7 +102,8 @@ namespace MePhIt
             );
             LoadEmojis(emojiReactSuccess, emojiReactFail, emojiNumbers);
 
-            Discord.GuildAvailable += (DSharpPlus.EventArgs.GuildCreateEventArgs args) =>
+            DSharpPlus.EventArgs.GuildCreateEventArgs args;
+            Discord.GuildAvailable += (Discord, args) =>
             {
                 return LoadServerSettingsAsync(args.Guild);
             };
