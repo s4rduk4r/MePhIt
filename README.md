@@ -1,3 +1,4 @@
+# Mono/dotNet Framework version [here](https://github.com/s4rduk4r/MePhit-mono)
 # MePhIT ![.NET Core](https://github.com/s4rduk4r/MePhit/workflows/.NET%20Core/badge.svg?branch=master&event=push)
 MePhIT - Discord bot to ease a distance learning
 ## About [Русская версия](./README-RU.md)
