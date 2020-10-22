@@ -23,8 +23,7 @@ Because of the bot being purposed to ease teacher's work, the majority of comman
 - Bot can be used on multiple servers simultaneously and keeps local server settings.
 
 ## Not implemented yet
-~~1. Store server settings in an external file~~
-2. File syncronization with Yandex.Disk, Google Drive, Mail.ru Cloud etc.
+1. File syncronization with Yandex.Disk, Google Drive, Mail.ru Cloud etc.
 
 ## Dependencies
 1. [MyTestLib](https://github.com/s4rduk4r/MyTestLib)
