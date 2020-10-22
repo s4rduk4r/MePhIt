@@ -8,6 +8,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using Newtonsoft.Json;
 using System.IO;
+using DSharpPlus.EventArgs;
 
 namespace MePhIt
 {
@@ -102,12 +103,18 @@ namespace MePhIt
             );
             LoadEmojis(emojiReactSuccess, emojiReactFail, emojiNumbers);
 
+#if MEPHIT_MONO
+            Discord.GuildAvailable += (Discord, args) => 
+            { 
+                return LoadServerSettingsAsync(args.Guild); 
+            };
+#else
             DSharpPlus.EventArgs.GuildCreateEventArgs args;
             Discord.GuildAvailable += (Discord, args) =>
             {
                 return LoadServerSettingsAsync(args.Guild);
             };
-
+#endif
             return commandPrefixes;
         }
 

@@ -78,7 +78,13 @@ namespace MePhIt.Commands
                     // Convert filepaths to Unix
                     foreach (var test in availableTests)
                     {
+#if MEPHIT_MONO
+                        var relPathStartsFrom = test.LastIndexOf(BotSettings.MyTestFolder) + BotSettings.MyTestFolder.Length;
+                        var relativePath = test.Substring(relPathStartsFrom + 1, test.Length - relPathStartsFrom - 1);
+                        var relPath = relativePath.Split(Path.DirectorySeparatorChar);
+#else
                         var relPath = Path.GetRelativePath(BotSettings.MyTestFolder, test).Split(Path.DirectorySeparatorChar);
+#endif
                         string relPathFixed = "";
                         foreach(var rPath in relPath)
                         {
@@ -122,7 +128,11 @@ namespace MePhIt.Commands
                 filePath = Path.Combine(BotSettings.MyTestFolder, filePath);
                 var test = new TestState();
                 test.LoadTest(filePath);
-                if(!TestLoaded.TryAdd(commandContext.Guild, test))
+#if MEPHIT_MONO
+                if (!(TestLoaded as ConcurrentDictionary<DiscordGuild, TestState>).TryAdd(commandContext.Guild, test))
+#else
+                if (!TestLoaded.TryAdd(commandContext.Guild, test))
+#endif
                 {
                     if (TestLoaded.ContainsKey(commandContext.Guild))
                     {
@@ -134,7 +144,11 @@ namespace MePhIt.Commands
                     }
                 }
 
+#if MEPHIT_MONO
+                (Settings as ConcurrentDictionary<DiscordGuild, CmdMyTestSettings>).TryAdd(commandContext.Guild, new CmdMyTestSettings());
+#else
                 Settings.TryAdd(commandContext.Guild, new CmdMyTestSettings());
+#endif
                 var msg = string.Format(Localization.Message(commandContext.Guild, MessageID.CmdMyTestFileLoadSuccess), test.Name);
                 await commandContext.Channel.SendMessageAsync(msg);
                 commandContext.Message.CreateReactionAsync(Bot.ReactSuccess);
