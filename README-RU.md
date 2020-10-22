@@ -27,8 +27,7 @@ Bot has several commands to post text messages of different severity to the spec
 - Бот может быть использован на множестве серверов одновременно и хранит локальные для сервера настройки.
 
 ## Что не реализовано
-1. Хранение настроек сервера во внешнем файле
-2. Синхронизация файлов из облачных хранилищ Яндекс.Диск, Google Drive, Mail.ru Cloud и.т.п.
+1. Синхронизация файлов из облачных хранилищ Яндекс.Диск, Google Drive, Mail.ru Cloud и.т.п.
 
 ## Зависимости
 1. [MyTestLib](https://github.com/s4rduk4r/MyTestLib)
