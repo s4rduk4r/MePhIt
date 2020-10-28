@@ -1,5 +1,8 @@
 # MePhIT ![.NET Core](https://github.com/s4rduk4r/MePhit/workflows/.NET%20Core/badge.svg?branch=master&event=push)
 MePhIT - Discord bot to ease a distance learning
+
+### Mono/dotNet Framework version [here](https://github.com/s4rduk4r/MePhit-mono)
+
 ## About [Русская версия](./README-RU.md)
 **MePhIT** (Medical Physics and Information Technology) is a [Discord](https://discordapp.com) bot to organize the students for a distance learning on a ~~guild~~ server with a teacher as a server owner/administrator. The bot's usage is intended to be a part of a small server (~20 members at most) and provide basic teaching services to the teacher and the students.
 
@@ -23,8 +26,7 @@ Because of the bot being purposed to ease teacher's work, the majority of comman
 - Bot can be used on multiple servers simultaneously and keeps local server settings.
 
 ## Not implemented yet
-1. Store server settings in an external file
-2. File syncronization with Yandex.Disk, Google Drive, Mail.ru Cloud etc.
+1. File syncronization with Yandex.Disk, Google Drive, Mail.ru Cloud etc.
 
 ## Dependencies
 1. [MyTestLib](https://github.com/s4rduk4r/MyTestLib)
