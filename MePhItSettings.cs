@@ -109,7 +109,6 @@ namespace MePhIt
                 return LoadServerSettingsAsync(args.Guild); 
             };
 #else
-            DSharpPlus.EventArgs.GuildCreateEventArgs args;
             Discord.GuildAvailable += (Discord, args) =>
             {
                 return LoadServerSettingsAsync(args.Guild);
