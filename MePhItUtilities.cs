@@ -53,6 +53,14 @@ namespace MePhIt
             }
         }
 
+        // ------------ TIME MANAGEMENT ------------
+        public static void WaitBeforeNextAction(int minTimeToWait = 1000, int maxDelta = 999)
+        {
+            var rng = new System.Random(500);
+            int timeToWait = minTimeToWait + rng.Next(0, maxDelta);
+            System.Threading.Thread.Sleep(timeToWait);
+        }
+
         // ------------ CHANNEL MANAGEMENT ------------
         /// <summary>
         /// Create temporary channels for specific server members

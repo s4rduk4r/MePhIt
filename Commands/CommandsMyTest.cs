@@ -331,7 +331,7 @@ namespace MePhIt.Commands
                     var accuracy = studentResult.Score / studentResult.TestState.Value;
                     var mark = GetMarks(srvr, accuracy);
                     msg += $"{resultInfo.Student.Mention}";
-                    msg += string.Format(msgMarkFmt, mark.Mark, resultInfo.ResultMsg.JumpLink) + "\n";
+                    msg += string.Format(msgMarkFmt, mark.Mark, accuracy, resultInfo.ResultMsg.JumpLink) + "\n";
                     resultMsgs.Add(resultInfo.ResultMsg);
                 }
 
@@ -399,7 +399,7 @@ namespace MePhIt.Commands
                 var linkText = Bot.Settings.Localization.Message(studentChannel.Guild, MessageID.CmdMyTestResultsLink);
                 linkText += resultMsg.JumpLink;
                 dmsg.ModifyAsync($"{dmsg.Content}\n\n{linkText}");
-                System.Threading.Thread.Sleep(50);
+                WaitBeforeNextAction(100, 200);
             }
 
             return (student, resultMsg);
@@ -611,12 +611,12 @@ namespace MePhIt.Commands
                 }
                 
                 var message = await tempChannel.SendMessageAsync(msg);
-                System.Threading.Thread.Sleep(200);
+                WaitBeforeNextAction();
 
                 for (int i = 1; i <= question.Answers.Count; i++)
                 {
                     await message.CreateReactionAsync(DiscordEmoji.FromName(BotSettings.Discord, NumberToEmoji(i)));
-                    System.Threading.Thread.Sleep(50);
+                    WaitBeforeNextAction(100, 200);
                 }
 
                 // Store messages for each student
@@ -654,6 +654,7 @@ namespace MePhIt.Commands
                 await tmpCh.Channel.AddOverwriteAsync(commandContext.Guild.EveryoneRole, Permissions.None, Permissions.All);
                 await tmpCh.Channel.AddOverwriteAsync(tmpCh.Member, Permissions.AccessChannels | Permissions.ReadMessageHistory, Permissions.All);
                 tempTestChannels[tmpCh.Member] = tmpCh.Channel;
+                WaitBeforeNextAction();
             }
             return (tempChannels.CategoryChannel.Id, tempTestChannels);
         }
